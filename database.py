@@ -5,9 +5,8 @@ from datetime import date
 
 
 conn = sqlite3.connect("database.db")
-
-
 cursor = conn.cursor()
+
 
 #Date entry is stored as the number of seconds since Jan 1 1970 (Unix time)
 cursor.execute("""CREATE TABLE IF NOT EXISTS habit_list(
@@ -25,23 +24,32 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS habit_data(
   
 conn.commit()
 
-def add_habit(name, description):
-    cursor.execute("INSERT INTO habit_list VALUES (?, ?)", (name, description))
+def add_habit(name, description, frequency = 1):
+    cursor.execute("INSERT INTO habit_list VALUES (?, ?, ?)", (name, description, frequency))
     conn.commit()
 
-def insert_habit_entry(name, seconds_time = int(time.time())):
-     
-    cursor.execute("INSERT INTO habit_data VALUES (?, ?, ?)", (name, int(seconds_time), getStreak(name, seconds_time, 1)))
+def insert_habit_entry(name, seconds_time = int(time.time()), frequency = 1):
+
+    cursor.execute("INSERT INTO habit_data VALUES (?, ?, ?)", (name, int(seconds_time), getStreak(name, seconds_time, frequency)))
     conn.commit()
 
-def get_all_info():
+def delete_lastentry():
     
-    cursor.execute("SELECT * FROM habit_data")
+    cursor.execute("DELETE FROM habit_data WHERE rowid = (SELECT MAX(rowid) FROM habit_data)")
+    conn.commit()
+
+def get_habit_info(habit_name = None):
+    
+    if not habit_name:
+        cursor.execute("SELECT * FROM habit_data")
+    else:
+        cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit_name,))
+        
     return cursor.fetchall()
 
-def get_habit_info(habit_name):
+def get_current_habits():
     
-    cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit_name,))
+    cursor.execute("SELECT habit_name FROM habit_list")
     return cursor.fetchall()
 
 """"
@@ -75,26 +83,25 @@ def getStreak(habit_name, habit_date, frequency):
     else:
         return 1
     
+def get_longest_streak(habit_name):
+    
+    cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit_name,))
+    return max(cursor.fetchall())[0]    
 
 def print_habit_info(habit_name = None):
     
-    if not habit_name:
-        list = get_all_info()
-    
-    else:
-        list = get_habit_info(habit_name)
-    
-    for entry in list:
+    for entry in get_habit_info(habit_name):
         
         print(f"Name of habit: {entry[0]}")
         print(f"Date of habit: {date.fromtimestamp(entry[1])}, current streak: {entry[2]}")
 
-        
-#insert_habit_entry("Exercise")
-insert_habit_entry("Exercise", time.mktime(time.strptime("28 Nov 2022 22:15:27", "%d %b %Y %H:%M:%S")))
+ 
+#insert_habit_entry("Exercise")       
+#insert_habit_entry("Litter box",int(time.time()), 7)
+insert_habit_entry("Exercise", time.mktime(time.strptime("30 Nov 2022 15:15:27", "%d %b %Y %H:%M:%S")), 1)
 
-
+#delete_lastentry()
 print_habit_info()
-
+#print(get_current_habits())
 
 conn.close()
