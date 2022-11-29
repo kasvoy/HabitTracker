@@ -4,10 +4,11 @@ from datetime import date
 
 class DatabaseConnection:
     
-    def __init__(self):
-        self.conn = sqlite3.connect("database.db")
+    def __init__(self, name):
+        self.conn = sqlite3.connect(name)
         self.cursor = self.conn.cursor()
 
+    def __enter__(self):
         #Date entry is stored as the number of seconds since Jan 1 1970 (Unix time)
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS habit_list(
                 habit_name TEXT PRIMARY KEY,
@@ -21,11 +22,8 @@ class DatabaseConnection:
                 current_streak integer,
                 FOREIGN KEY(habit_name) REFERENCES habit_list(habit_name)
                 )""")
-  
-  
-        self.conn.commit()
 
-    def __enter__(self):
+        self.conn.commit()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -76,10 +74,10 @@ class DatabaseConnection:
     """"
     The getStreak function returns the streak of the new entry to the habit_data table.
 
-    This function (for now) assumes the new entry has a date that is after in time compared to the previous entry.
+    This function assumes the new entry has a date that is after in time compared to the previous entry.
 
     It will return 1 if the new entry breaks the streak of [frequency]days or is during the same period.
-    During thhe same period means on the same day, or within the set number of days.
+    During the same period means on the same day, or within the set number of days.
 
     It will return [streak of previous entry]+1 if the new entry is on the next period determined by the frequency. 
     """
@@ -117,22 +115,23 @@ class DatabaseConnection:
             print(f"Date of habit: {date.fromtimestamp(entry[1])}, current streak: {entry[2]}")
 
 
-database = DatabaseConnection()
-
-with database as db:
-    #db.add_habit("Litter", "Litterbox clean", 7)
-    #print(db.get_current_habits())
-    db.insert_habit_entry("Exercise")
-    db.print_habit_info()
-
-database.insert_habit_entry("Exercise")
-#print(database.get_current_habits())
 
 
+if __name__ == "__main__":
+
+    print("i am in the database file rn what the heck")
+
+    """
+    with database as db:
+        #db.add_habit("Litter", "Litterbox clean", 7)
+        print(db.get_current_habits())
+        #db.insert_habit_entry("Litter")
+        db.print_habit_info()
+        #db.insert_habit_entry("Litter", time.mktime(time.strptime("06 Dec 2022 15:15:27", "%d %b %Y %H:%M:%S")))
+        print(db.get_longest_streak("Litter"))
+    """
 
 
-#database.print_habit_info()    
 
 
-#insert_habit_entry("Exercise", time.mktime(time.strptime("29 Nov 2022 15:15:27", "%d %b %Y %H:%M:%S")))
 
