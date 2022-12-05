@@ -2,13 +2,13 @@ import sqlite3
 import time
 from datetime import date
 
+
 class DatabaseConnection:
     
     def __init__(self, name):
         self.conn = sqlite3.connect(name)
         self.cursor = self.conn.cursor()
 
-    def __enter__(self):
         #Date entry is stored as the number of seconds since Jan 1 1970 (Unix time)
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS habit_list(
                 habit_name TEXT PRIMARY KEY,
@@ -24,10 +24,12 @@ class DatabaseConnection:
                 )""")
 
         self.conn.commit()
+
+    def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.conn.close()
+        self.conn.commit()
 
     def add_habit(self, name, description, frequency):
         self.cursor.execute("INSERT INTO habit_list VALUES (?, ?, ?)", (name, description, frequency))
@@ -83,14 +85,14 @@ class DatabaseConnection:
     """
     def getStreak(self, habit_name, habit_date, frequency):
     
-        list = self.get_habit_info(habit_name)
+        list1 = self.get_habit_info(habit_name)
     
-        if len(list) == 0:
+        if len(list1) == 0:
             return 1
     
-        previous_date = date.fromtimestamp(list[-1][1])
+        previous_date = date.fromtimestamp(list1[-1][1])
         current_date = date.fromtimestamp(habit_date)
-        current_streak = list[-1][2]
+        current_streak = list1[-1][2]
         time_difference = current_date - previous_date
     
         if time_difference.days == frequency:
