@@ -31,20 +31,13 @@ class DatabaseConnection:
     def __exit__(self, exc_type, exc_value, traceback):
         self.conn.commit()
 
-    def add_habit(self, name, description, frequency):
-        self.cursor.execute("INSERT INTO habit_list VALUES (?, ?, ?)", (name, description, frequency))
+    def add_habit(self, habit):
+        self.cursor.execute("INSERT INTO habit_list VALUES (?, ?, ?)", (habit.name, habit.description, habit.frequency))
         self.conn.commit()
 
-    def insert_habit_entry(self, name, seconds_time = int(time.time())):
-    
-        self.cursor.execute("SELECT frequency FROM habit_list WHERE habit_name = ?", (name,))
-    
-        frequency = self.cursor.fetchall()
-        if len(frequency) == 0:
-            print("Habit not added. Add habit first.")
-            return 0
+    def insert_habit_entry(self, habit, seconds_time):
 
-        self.cursor.execute("INSERT INTO habit_data VALUES (?, ?, ?)", (name, int(seconds_time), self.getStreak(name, seconds_time, frequency[0][0])))
+        self.cursor.execute("INSERT INTO habit_data VALUES (?, ?, ?)", (habit.name, int(seconds_time), habit.current_streak))
         self.conn.commit()
 
     def delete_lastentry(self):
@@ -59,69 +52,9 @@ class DatabaseConnection:
     
         self.conn.commit()
 
-    def get_habit_info(self, habit_name = None):
-    
-        if not habit_name:
-            self.cursor.execute("SELECT * FROM habit_data")
-        else:
-            self.cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit_name,))
-        
-        return self.cursor.fetchall()
-
-    def get_current_habits(self):
-    
-        self.cursor.execute("SELECT * FROM habit_list")
-        return self.cursor.fetchall()
-
-    """"
-    The getStreak function returns the streak of the new entry to the habit_data table.
-
-    This function assumes the new entry has a date that is after in time compared to the previous entry.
-
-    It will return 1 if the new entry breaks the streak of [frequency]days or is during the same period.
-    During the same period means on the same day, or within the set number of days.
-
-    It will return [streak of previous entry]+1 if the new entry is on the next period determined by the frequency. 
-    """
-    def getStreak(self, habit_name, habit_date, frequency):
-    
-        list1 = self.get_habit_info(habit_name)
-    
-        if len(list1) == 0:
-            return 1
-    
-        previous_date = date.fromtimestamp(list1[-1][1])
-        current_date = date.fromtimestamp(habit_date)
-        current_streak = list1[-1][2]
-        time_difference = current_date - previous_date
-    
-        if time_difference.days == frequency:
-            return current_streak + 1
-    
-        elif time_difference.days < frequency:
-            return current_streak
-    
-        else:
-            return 1
-    
-    def get_longest_streak(self, habit_name):
-    
-        self.cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit_name,))
-        return max(self.cursor.fetchall())[0]    
-
-    def print_habit_info(self, habit_name = None):
-    
-        for entry in self.get_habit_info(habit_name):
-        
-            print(f"Name of habit: {entry[0]}")
-            print(f"Date of habit: {date.fromtimestamp(entry[1])}, current streak: {entry[2]}")
-
-
-
 
 if __name__ == "__main__":
-
-    print("i am in the database file rn what the heck")
+    main()
 
     """
     with database as db:
@@ -132,7 +65,6 @@ if __name__ == "__main__":
         #db.insert_habit_entry("Litter", time.mktime(time.strptime("06 Dec 2022 15:15:27", "%d %b %Y %H:%M:%S")))
         print(db.get_longest_streak("Litter"))
     """
-
 
 
 
