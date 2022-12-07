@@ -16,7 +16,10 @@ class Habit:
         with database as db:
             entry_list = analysis.get_habit_data(db, self)
 
-        self.current_streak = entry_list[-1][2]
+        if len(entry_list) == 0:
+            self.current_streak = 0
+        else:
+            self.current_streak = entry_list[-1][2]
 
 
     """"
