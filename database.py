@@ -1,6 +1,4 @@
 import sqlite3
-import time
-from datetime import date
 
 
 class DatabaseConnection:
@@ -45,10 +43,10 @@ class DatabaseConnection:
         self.cursor.execute("DELETE FROM habit_data WHERE rowid = (SELECT MAX(rowid) FROM habit_data)")
         self.conn.commit()
 
-    def delete_habit(self, name):
+    def delete_habit(self, habit):
     
-        self.cursor.execute("DELETE FROM habit_data WHERE habit_name = ?", (name,))
-        self.cursor.execute("DELETE FROM habit_list WHERE habit_name = ?", (name,))
+        self.cursor.execute("DELETE FROM habit_data WHERE habit_name = ?", (habit.name,))
+        self.cursor.execute("DELETE FROM habit_list WHERE habit_name = ?", (habit.name,))
     
         self.conn.commit()
 
