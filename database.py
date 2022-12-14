@@ -23,11 +23,6 @@ class DatabaseConnection:
 
         self.conn.commit()
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.conn.commit()
 
     def add_habit(self, habit):
         self.cursor.execute("INSERT INTO habit_list VALUES (?, ?, ?)", (habit.name, habit.description, habit.frequency))

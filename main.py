@@ -1,74 +1,14 @@
-import sys, subprocess
-import time
-import analysis
+import sys, subprocess, time, analysis
 from datetime import date
 from database import DatabaseConnection
+from habitclass import Habit
 
-database = DatabaseConnection("test.db")
-
-class Habit:
-
-    def __init__(self, name, description, frequency):
-        self.name = name
-        self.description = description
-        self.frequency = frequency
-
-        with database as db:
-            entry_list = analysis.get_habit_data(db, self)
-
-        if len(entry_list) == 0:
-            self.current_streak = 0
-        else:
-            self.current_streak = entry_list[-1][2]
-
-
-    """"
-    The check_off method assigns a new streak to the habit object as well as inserts an entry into the database.
-
-    This method assumes the new entry has a date that is after in time compared to the previous entry.
-
-    It will return 1 if the new entry breaks the streak of [frequency]days or is during the same period.
-    During the same period means on the same day, or within the set number of days.
-
-    It will return [streak of previous entry]+1 if the new entry is on the next period determined by the frequency.
-    """
-
-    def check_off(self, seconds_time = int(time.time())):
-
-        with database as db:
-
-            habit_data = analysis.get_habit_data(db, self)
-
-            if len(habit_data) == 0:
-                self.current_streak = 1
-
-            else:
-                previous_entry_date = date.fromtimestamp(habit_data[-1][1])
-                current_entry_date = date.fromtimestamp(seconds_time)
-                previous_streak = habit_data[-1][2]
-
-                if current_entry_date < previous_entry_date:
-                    raise ValueError("Can't put in date from the past")
-
-                time_difference = current_entry_date - previous_entry_date
-
-                if time_difference.days == self.frequency:
-                    self.current_streak = previous_streak + 1
-
-                elif time_difference.days < self.frequency:
-                    self.current_streak = previous_streak
-
-                else:
-                    self.current_streak = 1
-
-                db.insert_habit_entry(self, seconds_time)
-
+db = DatabaseConnection("database.db")
 
 def main_menu():
     subprocess.run("clear", shell = True)
     print("\033[95m🐍HABIT PYTRACKER V.ALPHA 1.2.🐍\033[0m")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
-
 
     option = get_num_option([1,2,3,4])
 
@@ -86,37 +26,26 @@ def main_menu():
         database.conn.close()
         sys.exit()
 
-
 def check_off_menu():
     subprocess.run("clear", shell = True)
     print("\033[1mCHECK OFF HABIT - NEW HABIT ENTRY\033[0m")
     print("\nWhich habit do you want to check off?")
 
-    with database as db:
-        habit_list = analysis.get_current_habits(db)
+    habit_list = analysis.get_current_habits(db)
 
     if len(habit_list) == 0:
-        subprocess.run("clear", shell = True)
-        print("You are not currently tracking any habits. ")
-        print(" 1. Add habit. \n 2. Main menu")
-        option = get_num_option([1,2])
+        not_tracking_habits()
 
-        if option == 1:
-            add_habit_menu()
-        elif option == 2:
-            main_menu()
+    else:
+        for i in range(len(habit_list)):
+            print(f"{i+1}. {habit_list[i].name}")
 
-    for i in range(len(habit_list)):
-        print(f"{i+1}. {habit_list[i].name}")
+        option = get_num_option(range(1, len(habit_list) + 1))
+        tracked_habit = habit_list[option - 1]
 
-    option = get_num_option([1, len(habit_list)])
-    tracked_habit = habit_list[option - 1]
+        tracked_habit.check_off(db)
 
-
-    tracked_habit.check_off()
-
-    print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
-
+        print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
 
 def add_habit_menu():
     subprocess.run("clear", shell = True)
@@ -131,8 +60,7 @@ def add_habit_menu():
 
     habit = Habit(habit_name, description, frequency)
 
-    with database as db:
-        db.add_habit(habit)
+    db.add_habit(habit)
 
     subprocess.run("clear", shell = True)
     print("Habit added!")
@@ -154,92 +82,84 @@ def tracking_menu():
 
     print(" 1. Show all of my habits. \n 2. Track habit")
 
-    option = get_num_option([1,2])
+    option1 = get_num_option([1,2])
 
-    if option == 1:
-        with database as db:
-            habit_list = analysis.get_current_habits(db)
+    if option1 == 1:
+        habit_list = analysis.get_current_habits(db)
 
         if len(habit_list) == 0:
+            not_tracking_habits()
+
+        else:
             subprocess.run("clear", shell = True)
-            print("You are not currently tracking any habits. ")
-            print(" 1. Add habit. \n 2. Main menu")
-            option = get_num_option([1,2])
+            print("YOUR HABITS")
+            for habit in habit_list:
+                print('\n\033[1m',habit.name.upper(),'\033[0m')
+                print(f"Description: {habit.description}")
 
-            if option == 1:
-                add_habit_menu()
-            elif option == 2:
-                main_menu()
+                if habit.frequency == 1:
+                    print("Frequency: Done every day")
+                else:
+                    print(f"Frequency: Done every {habit.frequency} days")
 
-        subprocess.run("clear", shell = True)
-        print("YOUR HABITS")
-        for habit in habit_list:
-            print('\n\033[1m',habit.name.upper(),'\033[0m')
-            print(f"Description: {habit.description}")
+            print("\n 1. Edit/delete a habit \n 2. Track habit. \n 3. Main menu")
+            option2 = get_num_option([1,2,3])
 
-            if habit.frequency == 1:
-                print("Frequency: Done every day")
-            else:
-                print(f"Frequency: Done every {habit.frequency} days")
+            if option2 == 1:
 
-        print("\n 1. Edit/delete a habit \n 2. Track habit. \n 3. Main menu")
-        option = get_num_option([1,2, 3])
-
-        if option == 1:
-
-            subprocess.run("clear", shell = True)
-            print("Which habit would you like to edit or delete?\n")
-
-            print("0. Go back to main menu")
-            for i in range(len(habit_list)):
-                print(f"{i+1}. {habit_list[i].name}")
-
-            del_option = get_num_option([0, len(habit_list)])
-
-            if del_option == 0:
-                main_menu()
-
-            else:
                 subprocess.run("clear", shell = True)
-                chosen_habit = habit_list[del_option - 1]
-                print("Do you want to edit or delete this habit?")
-                print("\n 1. Edit \n 2. Delete")
-                edit_option = get_num_option([1, 2])
+                print("Which habit would you like to edit or delete?\n")
 
-                if edit_option == 1:
-                    editing_menu()
+                print("0. Go back to main menu")
+                for i in range(len(habit_list)):
+                    print(f"{i+1}. {habit_list[i].name}")
 
-                if edit_option == 2:
-                    with database as db:
-                        db.delete_habit(chosen_habit)
+                del_option = get_num_option([0, len(habit_list)])
 
-                    subprocess.run("clear", shell = True)
-                    print(f"{chosen_habit.name} deleted.")
-                    print("0. Go back to main menu")
-                    menu_option = get_num_option([0])
+                if del_option == 0:
                     main_menu()
 
-        if option == 2:
-            tracking_choice_menu()
+                else:
+                    subprocess.run("clear", shell = True)
+                    chosen_habit = habit_list[del_option - 1]
+                    print("Do you want to edit or delete this habit?")
+                    print("\n 1. Edit \n 2. Delete")
+                    edit_option = get_num_option([1, 2])
 
-        elif option == 3:
-            main_menu()
+                    if edit_option == 1:
+                        editing_menu()
 
-    elif option == 2:
+                    elif edit_option == 2:
+                        db.delete_habit(chosen_habit)
+
+                        subprocess.run("clear", shell = True)
+                        print(f"{chosen_habit.name} deleted.")
+                        print("0. Go back to main menu")
+                        menu_nooption = get_num_option([0])
+                        main_menu()
+
+            elif option2 == 2:
+                tracking_choice_menu()
+
+            else:
+                main_menu()
+
+    elif option1 == 2:
         tracking_choice_menu()
 
 
 def tracking_choice_menu():
     subprocess.run("clear", shell = True)
     print("Which of your habits would you like to track?")
-    with database as db:
-        habit_list = analysis.get_current_habits(db)
+
+    habit_list = analysis.get_current_habits(db)
 
     for i in range(len(habit_list)):
         print(f"{i+1}. {habit_list[i].name}")
 
-    option = get_num_option([1, len(habit_list)])
+    option = get_num_option(range(1, len(habit_list) + 1))
     habit = habit_list[option-1]
+    print("in tracking choice menu", habit)
 
     indiv_habit_tracking_menu(habit)
 
@@ -256,23 +176,36 @@ def indiv_habit_tracking_menu(habit):
     option = get_num_option([1, 2])
 
     if option == 1:
-        with database as db:
-            analysis.print_habit_data(db, habit)
+        analysis.print_habit_data(db, habit)
 
     if option == 2:
-        with database as db:
-            print(f"Your best streak for {habit.name} is {analysis.get_longest_streak(db, habit)}")
+        print(f"Your best streak for {habit.name} is {analysis.get_longest_streak(db, habit)}")
 
 
 def get_num_option(option_list):
 
-    user_choice = input("\nChoose option: ")
+    user_choice = input("\nChoose option: ").strip()
 
     while(not user_choice.isdigit() or (user_choice.isdigit() and (int(user_choice) not in option_list))):
         user_choice = input("Not a valid option. Choose again: ")
 
     return int(user_choice)
 
+def editing_menu():
+    print("Not implemented yet")
+    pass
+
+def not_tracking_habits():
+
+    subprocess.run("clear", shell = True)
+    print("You are not currently tracking any habits. ")
+    print(" 1. Add habit. \n 2. Main menu")
+    option = get_num_option([1,2])
+
+    if option == 1:
+        add_habit_menu()
+    elif option == 2:
+        main_menu()
 
 def main():
     main_menu()
@@ -280,7 +213,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
