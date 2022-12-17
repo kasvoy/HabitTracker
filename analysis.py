@@ -2,24 +2,51 @@ from habitclass import Habit
 from datetime import date
 
 
-def get_longest_streak(db, habit):
+def get_longest_streak_habit(db, habit):
 
     db.cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit.name,))
     return max(db.cursor.fetchall())[0]
+
+def get_longest_streak_all(db):
+
+    db.cursor.execute("SELECT current_streak FROM habit_data")
+    best_streak = max(db.cursor.fetchall())[0]
+    db.cursor.execute("SELECT habit_name FROM habit_data WHERE current_streak = ?", (best_streak,))
+    name = db.cursor.fetchone()[0]
+
+    return [name, best_streak]
 
 def print_habit_data(db, habit):
 
     for entry in get_habit_data(db, habit):
         print(f"Date: {date.fromtimestamp(entry[1])}, streak: {entry[2]}")
 
+def get_frequencies(db):
+
+    db.cursor.execute("SELECT frequency FROM habit_list")
+    frequency_list = set()
+
+    for entry in db.cursor.fetchall():
+        frequency_list.add(entry[0])
+
+    return frequency_list
+
+def get_habits_with_freq(db, freq):
+
+    db.cursor.execute("SELECT habit_name FROM habit_list WHERE frequency = ?", (freq,))
+    names = []
+
+    for entry in db.cursor.fetchall():
+        names.append(entry[0])
+
+    return names
 
 #Helper function for get_current_habits. It sets the streaks for the newly created habit objects
-
 def set_streak(db, habit):
     habit_data = get_habit_data(db, habit)
 
     if len(habit_data) == 0:
-        habit.current_streak = 1
+        habit.current_streak = 0
     else:
         habit.current_streak = habit_data[-1][2]
 
@@ -42,3 +69,4 @@ def get_habit_data(db, habit):
 
     db.cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit.name,))
     return db.cursor.fetchall()
+

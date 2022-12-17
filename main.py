@@ -3,7 +3,7 @@ from datetime import date
 from database import DatabaseConnection
 from habitclass import Habit
 
-db = DatabaseConnection("database.db")
+db = DatabaseConnection("test.db")
 
 def main_menu():
     subprocess.run("clear", shell = True)
@@ -23,7 +23,7 @@ def main_menu():
 
     if option == 4:
         print("Program quit")
-        database.conn.close()
+        db.conn.close()
         sys.exit()
 
 def check_off_menu():
@@ -46,6 +46,7 @@ def check_off_menu():
         tracked_habit.check_off(db)
 
         print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
+        back_or_quit()
 
 def add_habit_menu():
     subprocess.run("clear", shell = True)
@@ -80,7 +81,7 @@ def tracking_menu():
     subprocess.run("clear", shell = True)
     print("TRACKING YOUR HABITS")
 
-    print(" 1. Show all of my habits. \n 2. Track habit")
+    print(" 1. Show all of my habits. \n 2. Track habit \n")
 
     option1 = get_num_option([1,2])
 
@@ -103,7 +104,7 @@ def tracking_menu():
                     print(f"Frequency: Done every {habit.frequency} days")
 
             print("\n 1. Edit/delete a habit \n 2. Track habit. \n 3. Main menu")
-            option2 = get_num_option([1,2,3])
+            option2 = get_num_option([1, 2, 3, 4])
 
             if option2 == 1:
 
@@ -114,7 +115,7 @@ def tracking_menu():
                 for i in range(len(habit_list)):
                     print(f"{i+1}. {habit_list[i].name}")
 
-                del_option = get_num_option([0, len(habit_list)])
+                del_option = get_num_option(range(len(habit_list) + 1))
 
                 if del_option == 0:
                     main_menu()
@@ -134,15 +135,14 @@ def tracking_menu():
 
                         subprocess.run("clear", shell = True)
                         print(f"{chosen_habit.name} deleted.")
-                        print("0. Go back to main menu")
-                        menu_nooption = get_num_option([0])
-                        main_menu()
+                        back_or_quit()
 
             elif option2 == 2:
                 tracking_choice_menu()
 
             else:
                 main_menu()
+
 
     elif option1 == 2:
         tracking_choice_menu()
@@ -153,15 +153,43 @@ def tracking_choice_menu():
     print("Which of your habits would you like to track?")
 
     habit_list = analysis.get_current_habits(db)
+    length = len(habit_list)
 
     for i in range(len(habit_list)):
         print(f"{i+1}. {habit_list[i].name}")
 
-    option = get_num_option(range(1, len(habit_list) + 1))
-    habit = habit_list[option-1]
-    print("in tracking choice menu", habit)
+    print("\nOR GLOBAL STATS:\n ")
+    print(f"{length+1}. Show longest streak of all your habits.")
+    print(f"{length+2}. Show habits with the same frequency.")
 
-    indiv_habit_tracking_menu(habit)
+    option = get_num_option(range(1, length + 3))
+    if option < length + 1:
+        habit = habit_list[option-1]
+        indiv_habit_tracking_menu(habit)
+
+    elif option == length + 1:
+        name = analysis.get_longest_streak_all(db)[0]
+        best_streak = analysis.get_longest_streak_all(db)[1]
+        print(f"Your longest streak of all habits is {best_streak} for habit {name}.")
+        back_or_quit()
+
+    elif option == length + 2:
+        sorted_freq_set = sorted(analysis.get_frequencies(db))
+
+        for i in range(len(sorted_freq_set)):
+            print(f"{i+1}. Habits done every {sorted_freq_set[i]} days.")
+
+        freq_option = get_num_option(range(0, len(sorted_freq_set) + 1))
+        chosen_freq = sorted_freq_set[freq_option - 1]
+        habits_with_chosen_freq = analysis.get_habits_with_freq(db, chosen_freq)
+
+        print(f"Habits done every {chosen_freq} days are:")
+
+        for i in range(len(habits_with_chosen_freq)):
+            print(f"{i+1}. {habits_with_chosen_freq[i]}")
+
+        back_or_quit()
+
 
 """
 Functionalities related to tracking individual habits (streak info etc).
@@ -179,7 +207,9 @@ def indiv_habit_tracking_menu(habit):
         analysis.print_habit_data(db, habit)
 
     if option == 2:
-        print(f"Your best streak for {habit.name} is {analysis.get_longest_streak(db, habit)}")
+        print(f"Your best streak for {habit.name} is {analysis.get_longest_streak_habit(db, habit)}")
+
+    back_or_quit()
 
 
 def get_num_option(option_list):
@@ -207,9 +237,22 @@ def not_tracking_habits():
     elif option == 2:
         main_menu()
 
+def back_or_quit():
+
+    user_choice = input("\nType 'm/M' for main menu or 'q/Q' to quit program: ").lower()
+
+    while(user_choice != 'q' and user_choice != 'm'):
+        user_choice = input("Not a valid option. Type 'm/M' for main menu or 'q/Q' to quit program: ").lower()
+
+    if user_choice == 'q':
+        print("Program quit.")
+        sys.exit()
+    else:
+        main_menu()
+
+
 def main():
     main_menu()
-
 
 if __name__ == "__main__":
     main()

@@ -40,11 +40,8 @@ class Habit:
 
             time_difference = current_entry_date - previous_entry_date
 
-            if time_difference.days == self.frequency:
+            if time_difference.days <= self.frequency:
                 self.current_streak = previous_streak + 1
-
-            elif time_difference.days < self.frequency:
-                self.current_streak = previous_streak
 
             else:
                 self.current_streak = 1
