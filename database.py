@@ -44,21 +44,3 @@ class DatabaseConnection:
         self.cursor.execute("DELETE FROM habit_list WHERE habit_name = ?", (habit.name,))
     
         self.conn.commit()
-
-
-if __name__ == "__main__":
-    main()
-
-    """
-    with database as db:
-        #db.add_habit("Litter", "Litterbox clean", 7)
-        print(db.get_current_habits())
-        #db.insert_habit_entry("Litter")
-        db.print_habit_info()
-        #db.insert_habit_entry("Litter", time.mktime(time.strptime("06 Dec 2022 15:15:27", "%d %b %Y %H:%M:%S")))
-        print(db.get_longest_streak("Litter"))
-    """
-
-
-
-

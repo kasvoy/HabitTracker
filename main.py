@@ -161,8 +161,9 @@ def tracking_choice_menu():
     print("\nOR GLOBAL STATS:\n ")
     print(f"{length+1}. Show longest streak of all your habits.")
     print(f"{length+2}. Show habits with the same frequency.")
+    print(f"{length+3}. With which habits did you struggle most?")
 
-    option = get_num_option(range(1, length + 3))
+    option = get_num_option(range(1, length + 4))
     if option < length + 1:
         habit = habit_list[option-1]
         indiv_habit_tracking_menu(habit)
@@ -189,8 +190,12 @@ def tracking_choice_menu():
             print(f"{i+1}. {habits_with_chosen_freq[i]}")
 
         back_or_quit()
-
-
+        
+    elif option == length + 3:
+        print("The habits that you struggled with the most last month are the habits you had the most streak losses in.")
+        print(analysis.find_most_streakloss_in_period(db,90))
+        
+    
 """
 Functionalities related to tracking individual habits (streak info etc).
 """

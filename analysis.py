@@ -1,5 +1,6 @@
 from habitclass import Habit
-from datetime import date
+from datetime import date, timedelta, datetime
+
 
 
 def get_longest_streak_habit(db, habit):
@@ -41,7 +42,61 @@ def get_habits_with_freq(db, freq):
 
     return names
 
-#Helper function for get_current_habits. It sets the streaks for the newly created habit objects
+def streakloss_in_period(db, habit, period_nodays):
+    db.cursor.execute("SELECT current_streak, date FROM habit_data WHERE habit_name = ?", (habit.name,))
+    results = db.cursor.fetchall()
+    
+    if len(results) == 0:
+        return "Didn't engage in habit in the set period"
+
+    delta = timedelta(days = period_nodays)
+    
+    #last_date = datetime.now() - delta
+    last_date = datetime.fromtimestamp(results[-1][1]) - delta
+
+    
+    #last_date but in a unix timestamp (as stored in the database)
+    last_date_seconds = int(last_date.timestamp())
+
+    #create list with just the dates from the entries
+    dates = []
+    streaks = []
+    for entry in results:
+        dates.append(entry[1])
+    
+    for index, date in enumerate(dates):
+        if date == last_date_seconds or date > last_date_seconds:
+            cutoff_index = index
+            break
+    
+    entries_in_period = results[cutoff_index:]
+    
+    for entry in entries_in_period:
+        streaks.append(entry[0])
+            
+    no_streaklosses = 0
+    
+    for i in range(len(streaks) - 1):
+        if (streaks[i + 1] - streaks[i]) < 0:
+            no_streaklosses += 1
+
+    return no_streaklosses
+
+def find_most_streakloss_in_period(db, period_nodays):
+
+    habit_list = get_current_habits(db)
+    habit_streakloss = dict()
+        
+    for habit in habit_list:
+        habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_nodays)})
+         
+    return [habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())]
+
+"""    
+Helper function for get_current_habits.
+It sets the streaks for the newly created habit objects based on the data in the database.
+"""
+
 def set_streak(db, habit):
     habit_data = get_habit_data(db, habit)
 
