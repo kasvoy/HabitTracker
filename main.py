@@ -161,7 +161,7 @@ def tracking_choice_menu():
     print("\nOR GLOBAL STATS:\n ")
     print(f"{length+1}. Show longest streak of all your habits.")
     print(f"{length+2}. Show habits with the same frequency.")
-    print(f"{length+3}. With which habits did you struggle most?")
+    print(f"{length+3}. With which habits did you struggle most so far?")
 
     option = get_num_option(range(1, length + 4))
     if option < length + 1:
@@ -192,10 +192,23 @@ def tracking_choice_menu():
         back_or_quit()
         
     elif option == length + 3:
-        print("The habits that you struggled with the most last month are the habits you had the most streak losses in.")
-        print(analysis.find_most_streakloss_in_period(db,90))
+        print("What habits did you struggle most with?")
+        print("This is determined by how many streak losses you had in your chosen period")
+        period_no_days = input("You are interested in knowing which habits you struggled the most with in how many days?: ")
         
-    
+        while(not period_no_days.isdigit() or (period_no_days.isdigit() and int(period_no_days) < 1)):
+            period_no_days = input("Not a valid period. Pick a whole number of days: ")
+        
+        habit_streakloss = analysis.find_most_streakloss_in_period(db, int(period_no_days))
+        
+        most_streakloss_habits = [
+        habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
+        ]
+        
+        print(f"The habits that you struggled with the most in the last {period_no_days} days are: ")
+        for habit_name in most_streakloss_habits:
+            print(f"{habit_name} with {habit_streakloss[habit_name]} streak losses")
+
 """
 Functionalities related to tracking individual habits (streak info etc).
 """

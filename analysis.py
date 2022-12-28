@@ -89,8 +89,8 @@ def find_most_streakloss_in_period(db, period_nodays):
         
     for habit in habit_list:
         habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_nodays)})
-         
-    return [habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())]
+    
+    return habit_streakloss 
 
 """    
 Helper function for get_current_habits.
