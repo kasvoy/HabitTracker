@@ -6,7 +6,7 @@ from habitclass import Habit
 db = DatabaseConnection("test.db")
 
 def main_menu():
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("\033[95m🐍HABIT PYTRACKER V.ALPHA 1.2.🐍\033[0m")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
 
@@ -21,13 +21,13 @@ def main_menu():
     elif option == 3:
         tracking_menu()
 
-    if option == 4:
+    elif option == 4:
         print("Program quit")
         db.conn.close()
         sys.exit()
 
 def check_off_menu():
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("\033[1mCHECK OFF HABIT - NEW HABIT ENTRY\033[0m")
     print("\nWhich habit do you want to check off?")
 
@@ -49,7 +49,7 @@ def check_off_menu():
         back_or_quit()
 
 def add_habit_menu():
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("ADD NEW HABIT")
 
     habit_name = input("Create habit name: ").strip()
@@ -63,7 +63,7 @@ def add_habit_menu():
 
     db.add_habit(habit)
 
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("Habit added!")
     print(" 1. Check off habit. \n 2. Main menu")
 
@@ -78,7 +78,7 @@ def add_habit_menu():
 
 def tracking_menu():
 
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("TRACKING YOUR HABITS")
 
     print(" 1. Show all of my habits. \n 2. Track habit \n")
@@ -92,7 +92,7 @@ def tracking_menu():
             not_tracking_habits()
 
         else:
-            subprocess.run("clear", shell = True)
+            clear_screen()
             print("YOUR HABITS")
             for habit in habit_list:
                 print('\n\033[1m',habit.name.upper(),'\033[0m')
@@ -108,7 +108,7 @@ def tracking_menu():
 
             if option2 == 1:
 
-                subprocess.run("clear", shell = True)
+                clear_screen()
                 print("Which habit would you like to edit or delete?\n")
 
                 print("0. Go back to main menu")
@@ -121,7 +121,7 @@ def tracking_menu():
                     main_menu()
 
                 else:
-                    subprocess.run("clear", shell = True)
+                    clear_screen()
                     chosen_habit = habit_list[del_option - 1]
                     print("Do you want to edit or delete this habit?")
                     print("\n 1. Edit \n 2. Delete")
@@ -133,7 +133,7 @@ def tracking_menu():
                     elif edit_option == 2:
                         db.delete_habit(chosen_habit)
 
-                        subprocess.run("clear", shell = True)
+                        clear_screen()
                         print(f"{chosen_habit.name} deleted.")
                         back_or_quit()
 
@@ -149,7 +149,7 @@ def tracking_menu():
 
 
 def tracking_choice_menu():
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("Which of your habits would you like to track?")
 
     habit_list = analysis.get_current_habits(db)
@@ -192,9 +192,11 @@ def tracking_choice_menu():
         back_or_quit()
         
     elif option == length + 3:
+        clear_screen()
         print("What habits did you struggle most with?")
-        print("This is determined by how many streak losses you had in your chosen period")
-        period_no_days = input("You are interested in knowing which habits you struggled the most with in how many days?: ")
+        print("\nThis is determined by how many streak losses you had in your chosen period.")
+        print("\nFor example, if you want to know which habits you struggled the most with last month, put '30' in the next prompt.")
+        period_no_days = input("\nPut the number of days from today you want to know how many streak losses you had: ")
         
         while(not period_no_days.isdigit() or (period_no_days.isdigit() and int(period_no_days) < 1)):
             period_no_days = input("Not a valid period. Pick a whole number of days: ")
@@ -205,7 +207,7 @@ def tracking_choice_menu():
         habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
         ]
         
-        print(f"The habits that you struggled with the most in the last {period_no_days} days are: ")
+        print(f"\nThe habit(s) that you struggled with the most in the last {period_no_days} days is/are: ")
         for habit_name in most_streakloss_habits:
             print(f"{habit_name} with {habit_streakloss[habit_name]} streak losses")
 
@@ -214,7 +216,7 @@ Functionalities related to tracking individual habits (streak info etc).
 """
 
 def indiv_habit_tracking_menu(habit):
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print(f"Habit: {habit.name}. Current streak: {habit.current_streak}\n")
 
     print(f" 1. Show all entries for {habit.name}. \n 2. What was my longest streak for {habit.name}")
@@ -245,7 +247,7 @@ def editing_menu():
 
 def not_tracking_habits():
 
-    subprocess.run("clear", shell = True)
+    clear_screen()
     print("You are not currently tracking any habits. ")
     print(" 1. Add habit. \n 2. Main menu")
     option = get_num_option([1,2])
@@ -267,6 +269,15 @@ def back_or_quit():
         sys.exit()
     else:
         main_menu()
+
+def clear_screen():
+    os = sys.platform
+    
+    if os == 'win32':
+        subprocess.run("cls", shell = True)
+    elif os == 'linux' or os == 'darwin':
+        subprocess.run("clear", shell = True)    
+    
 
 
 def main():
