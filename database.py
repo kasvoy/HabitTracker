@@ -33,9 +33,8 @@ class DatabaseConnection:
         self.cursor.execute("INSERT INTO habit_data VALUES (?, ?, ?)", (habit.name, int(seconds_time), habit.current_streak))
         self.conn.commit()
 
-    def delete_lastentry(self):
-    
-        self.cursor.execute("DELETE FROM habit_data WHERE rowid = (SELECT MAX(rowid) FROM habit_data)")
+    def delete_lastentry_for_habit(self, habit, num_to_remove):
+        self.cursor.execute("DELETE FROM habit_data WHERE habit_name = ? ORDER BY date DESC LIMIT ?", (habit.name, num_to_remove))
         self.conn.commit()
 
     def delete_habit(self, habit):

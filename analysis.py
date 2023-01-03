@@ -1,8 +1,6 @@
 from habitclass import Habit
 from datetime import date, timedelta, datetime
 
-
-
 def get_longest_streak_habit(db, habit):
 
     db.cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit.name,))
@@ -92,19 +90,6 @@ def find_most_streakloss_in_period(db, period_nodays):
     
     return habit_streakloss 
 
-"""    
-Helper function for get_current_habits.
-It sets the streaks for the newly created habit objects based on the data in the database.
-"""
-
-def set_streak(db, habit):
-    habit_data = get_habit_data(db, habit)
-
-    if len(habit_data) == 0:
-        habit.current_streak = 0
-    else:
-        habit.current_streak = habit_data[-1][2]
-
 def get_current_habits(db):
 
     db.cursor.execute("SELECT * FROM habit_list")
@@ -116,7 +101,7 @@ def get_current_habits(db):
         habit_obj_list.append(Habit(entry[0], entry[1], entry[2]))
 
     for habit in habit_obj_list:
-        set_streak(db, habit)
+        habit.set_streak(db)
 
     return habit_obj_list
 

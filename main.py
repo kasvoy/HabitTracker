@@ -1,5 +1,5 @@
 import sys, subprocess, time, analysis
-from datetime import date
+import datetime
 from database import DatabaseConnection
 from habitclass import Habit
 
@@ -7,7 +7,7 @@ db = DatabaseConnection("test.db")
 
 def main_menu():
     clear_screen()
-    print("\033[95m🐍HABIT PYTRACKER V.ALPHA 1.2.🐍\033[0m")
+    print("\033[95m🐍HABIT PYTRACKER CLOSED BETA 1.0.🐍\033[0m")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
 
     option = get_num_option([1,2,3,4])
@@ -42,11 +42,24 @@ def check_off_menu():
 
         option = get_num_option(range(1, len(habit_list) + 1))
         tracked_habit = habit_list[option - 1]
+        
+        print("1. Check off habit - NOW")
+        print("2. Forgot to check off habit before and maybe lost a streak? Check off for date in the past.")
+        option = get_num_option([1,2])
+        
+        if option == 1:                
+            tracked_habit.check_off(db)
 
-        tracked_habit.check_off(db)
-
-        print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
-        back_or_quit()
+            print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
+            back_or_quit()
+            
+        elif option == 2:
+            print(f"What date do you want to insert an entry for {tracked_habit.name}?")
+            date_seconds = get_date_frominput()
+            
+            tracked_habit.check_off(db, date_seconds)
+            print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
+            back_or_quit()
 
 def add_habit_menu():
     clear_screen()
@@ -210,6 +223,7 @@ def tracking_choice_menu():
         print(f"\nThe habit(s) that you struggled with the most in the last {period_no_days} days is/are: ")
         for habit_name in most_streakloss_habits:
             print(f"{habit_name} with {habit_streakloss[habit_name]} streak losses")
+        back_or_quit()
 
 """
 Functionalities related to tracking individual habits (streak info etc).
@@ -240,6 +254,25 @@ def get_num_option(option_list):
         user_choice = input("Not a valid option. Choose again: ")
 
     return int(user_choice)
+
+def get_date_frominput():
+    year = input("Enter year: ")
+    while(not year.isdigit() or (year.isdigit() and int(year) < 1970)):
+        year = input("Enter a valid year (Gregorian calendar, before 1970): ")
+        
+    month = input("Enter month (1-12): ")
+    while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 13)))):
+        month = input("Enter a valid month (1-12): ")
+            
+    day = input("Enter day: ")
+    while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 31)))):
+        month = input("Enter a valid day - depends on month!): ")
+        
+           
+    #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
+    #to just the dates
+    date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
+    return int(date.timestamp())
 
 def editing_menu():
     print("Not implemented yet")
@@ -285,3 +318,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
