@@ -43,3 +43,25 @@ class DatabaseConnection:
         self.cursor.execute("DELETE FROM habit_list WHERE habit_name = ?", (habit.name,))
     
         self.conn.commit()
+    
+    def edit_habit(self, habit, new_values):
+        new_name = new_values[0]
+        new_description = new_values[1]
+        new_frequency = new_values[2]
+        
+        
+        self.cursor.execute("""UPDATE habit_list 
+                            SET habit_name = :new_name,
+                                description = :new_description,
+                                frequency = :new_frequency
+                            WHERE habit_name = :current_name
+                            """, {'new_name': new_name, 'new_description': new_description, 'new_frequency': new_frequency,
+                                  'current_name': habit.name})
+        
+        self.cursor.execute("""UPDATE habit_data 
+                            SET habit_name = :new_name
+                            WHERE habit_name = :current_name
+                            """, {'new_name': new_name, 'current_name': habit.name})
+        
+        
+        self.conn.commit()

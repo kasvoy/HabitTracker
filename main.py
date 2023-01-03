@@ -1,4 +1,4 @@
-import sys, subprocess, time, analysis
+import sys, subprocess, analysis
 import datetime
 from database import DatabaseConnection
 from habitclass import Habit
@@ -92,7 +92,7 @@ def add_habit_menu():
 def tracking_menu():
 
     clear_screen()
-    print("TRACKING YOUR HABITS")
+    print("\033[1mTRACKING YOUR HABITS\033[0m")
 
     print(" 1. Show all of my habits. \n 2. Track habit \n")
 
@@ -141,7 +141,7 @@ def tracking_menu():
                     edit_option = get_num_option([1, 2])
 
                     if edit_option == 1:
-                        editing_menu()
+                        editing_menu(chosen_habit)
 
                     elif edit_option == 2:
                         db.delete_habit(chosen_habit)
@@ -274,9 +274,28 @@ def get_date_frominput():
     date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
     return int(date.timestamp())
 
-def editing_menu():
-    print("Not implemented yet")
-    pass
+def editing_menu(habit):
+    clear_screen()
+    print(f"\033[1mEDITING HABIT - {habit.name}\033[0m\n")
+    
+    new_name = input((f"Current habit name: \033[1m{habit.name}\033[0m. Type new name: ")).strip()
+    while (not new_name or new_name.isspace()):
+        new_name = input(f"Provide a new name (can't be just spaces); if you changed your mind, just put in the same name: ")
+    
+    new_description = input((f"Current habit description: \033[1m{habit.description}\033[0m. Type new description: ")).strip()
+    while (not new_description or new_description.isspace()):
+        new_description = input(f"Provide a new description (if you changed your mind, just put in the same one: ")
+    
+    print("\n\033[1mKEEP IN MIND\033[0m: Changing the frequency changes when you get a streak increase.")
+
+    new_frequency = input(f"\nCurrent frequency: \033[1m{habit.frequency}\033[0m; Provide new frequency (if you changed your mind just put in the same one as before): ")
+    while (not new_frequency.isdigit() or (new_frequency.isdigit() and int(new_frequency) < 1)):
+        new_frequency = input("Provide a valid frequency - a positive whole number of days: ") 
+    
+    new_values = [new_name, new_description, int(new_frequency)]
+    db.edit_habit(habit, new_values)
+    
+    back_or_quit()
 
 def not_tracking_habits():
 
@@ -311,8 +330,6 @@ def clear_screen():
     elif os == 'linux' or os == 'darwin':
         subprocess.run("clear", shell = True)    
     
-
-
 def main():
     main_menu()
 
