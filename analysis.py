@@ -1,6 +1,34 @@
 from habitclass import Habit
 from datetime import date, timedelta, datetime
 
+#Helper function for check_off method in Habit class (habitclass.Habit)
+def find_block_number(db, habit, entry_date):
+    
+    block_number = 0
+    habit_data = get_habit_data(db, habit)
+    
+    streaks = []
+    for entry in habit_data:
+        streaks.append(entry[2])
+    
+    last_index_streaks = len(streaks) - 1
+    
+    for streak in reversed(streaks):
+        if streak == 1:
+            cutoff_index_streaks = last_index_streaks
+            break          
+        last_index_streaks -= 1 
+   
+    latest_date_streak1 = date.fromtimestamp(habit_data[cutoff_index_streaks][1])
+
+    frequency_days = timedelta(days=habit.frequency)
+
+    while(latest_date_streak1 <= entry_date):
+        latest_date_streak1 += frequency_days
+        block_number += 1
+    
+    return block_number
+
 def get_longest_streak_habit(db, habit):
 
     db.cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit.name,))

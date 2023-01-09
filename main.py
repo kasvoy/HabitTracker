@@ -7,7 +7,7 @@ db = DatabaseConnection("test.db")
 
 def main_menu():
     clear_screen()
-    print("\033[95m🐍HABIT PYTRACKER CLOSED BETA 1.0.🐍\033[0m")
+    print("\033[95m🐍HABIT PYTRACKER EARLY RELEASE 1.1.🐍\033[0m")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
 
     option = get_num_option([1,2,3,4])
@@ -43,7 +43,10 @@ def check_off_menu():
         option = get_num_option(range(1, len(habit_list) + 1))
         tracked_habit = habit_list[option - 1]
         
-        print("1. Check off habit - NOW")
+        date_today_string = datetime.date.today().strftime("%A %d %B %Y")
+        
+        
+        print(f"1. Check off habit - NOW ({date_today_string})")
         print("2. Forgot to check off habit before and maybe lost a streak? Check off for date in the past.")
         option = get_num_option([1,2])
         
@@ -136,7 +139,7 @@ def tracking_menu():
                 else:
                     clear_screen()
                     chosen_habit = habit_list[del_option - 1]
-                    print("Do you want to edit or delete this habit?")
+                    print(f"Do you want to edit or delete \033[1m{chosen_habit.name}\033[0m?")
                     print("\n 1. Edit \n 2. Delete")
                     edit_option = get_num_option([1, 2])
 
@@ -294,6 +297,8 @@ def editing_menu(habit):
     
     new_values = [new_name, new_description, int(new_frequency)]
     db.edit_habit(habit, new_values)
+    
+    print("Habit edited!")
     
     back_or_quit()
 
