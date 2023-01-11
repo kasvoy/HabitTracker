@@ -1,6 +1,5 @@
-import time, analysis
-import datetime
-import copy
+from src import analysis
+import time, datetime, copy
 
 class Habit:
 

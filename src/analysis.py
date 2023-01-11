@@ -1,4 +1,4 @@
-from habitclass import Habit
+from src import habitclass
 from datetime import date, timedelta, datetime
 
 #Helper function for check_off method in Habit class (habitclass.Habit)
@@ -18,7 +18,7 @@ def find_block_number(db, habit, entry_date):
             cutoff_index_streaks = last_index_streaks
             break          
         last_index_streaks -= 1 
-   
+
     latest_date_streak1 = date.fromtimestamp(habit_data[cutoff_index_streaks][1])
 
     frequency_days = timedelta(days=habit.frequency)
@@ -126,7 +126,7 @@ def get_current_habits(db):
 
     #create a list of habit objects from the database representing the currently tracked habits
     for entry in tuples_list:
-        habit_obj_list.append(Habit(entry[0], entry[1], entry[2]))
+        habit_obj_list.append(habitclass.Habit(entry[0], entry[1], entry[2]))
 
     for habit in habit_obj_list:
         habit.set_streak(db)
