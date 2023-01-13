@@ -1,13 +1,12 @@
-import sys, subprocess, analysis
-import datetime
-from database import DatabaseConnection
-from habitclass import Habit
-
-db = DatabaseConnection("test.db")
+import sys, subprocess, datetime
+from . import database, analysis
+from . import habitclass
+    
+db = database.DatabaseConnection("test.db")
 
 def main_menu():
     clear_screen()
-    print("\033[95m🐍HABIT PYTRACKER EARLY RELEASE 1.1.🐍\033[0m")
+    print("\033[95m\033[1mHABIT PYTRACKER EARLY RELEASE 1.1.\033[0m\n")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
 
     option = get_num_option([1,2,3,4])
@@ -44,6 +43,8 @@ def check_off_menu():
         tracked_habit = habit_list[option - 1]
         
         date_today_string = datetime.date.today().strftime("%A %d %B %Y")
+        clear_screen()
+        print(f"Checking off habit \033[1m{tracked_habit.name}\033[0m\n")
         
         
         print(f"1. Check off habit - NOW ({date_today_string})")
@@ -54,7 +55,7 @@ def check_off_menu():
             tracked_habit.check_off(db)
 
             print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
-            back_or_quit()
+            back_or_quit_or_track()
             
         elif option == 2:
             print(f"What date do you want to insert an entry for {tracked_habit.name}?")
@@ -62,7 +63,7 @@ def check_off_menu():
             
             tracked_habit.check_off(db, date_seconds)
             print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
-            back_or_quit()
+            back_or_quit_or_track()
 
 def add_habit_menu():
     clear_screen()
@@ -75,7 +76,7 @@ def add_habit_menu():
     while(not frequency.isdigit() or (frequency.isdigit() and int(frequency) < 1)):
         frequency = input("Frequency must be a positive integer: ")
 
-    habit = Habit(habit_name, description, frequency)
+    habit = habitclass.Habit(habit_name, description, frequency)
 
     db.add_habit(habit)
 
@@ -100,10 +101,9 @@ def tracking_menu():
     print(" 1. Show all of my habits. \n 2. Track habit \n")
 
     option1 = get_num_option([1,2])
-
+    habit_list = analysis.get_current_habits(db)
+    
     if option1 == 1:
-        habit_list = analysis.get_current_habits(db)
-
         if len(habit_list) == 0:
             not_tracking_habits()
 
@@ -151,7 +151,7 @@ def tracking_menu():
 
                         clear_screen()
                         print(f"{chosen_habit.name} deleted.")
-                        back_or_quit()
+                        back_or_quit_or_track()
 
             elif option2 == 2:
                 tracking_choice_menu()
@@ -159,9 +159,11 @@ def tracking_menu():
             else:
                 main_menu()
 
-
     elif option1 == 2:
-        tracking_choice_menu()
+        if len(habit_list) == 0:
+            not_tracking_habits()
+        else:  
+            tracking_choice_menu()
 
 
 def tracking_choice_menu():
@@ -183,14 +185,19 @@ def tracking_choice_menu():
     if option < length + 1:
         habit = habit_list[option-1]
         indiv_habit_tracking_menu(habit)
-
+    
     elif option == length + 1:
-        name = analysis.get_longest_streak_all(db)[0]
-        best_streak = analysis.get_longest_streak_all(db)[1]
+        
+        name_streak = analysis.get_longest_streak_all(db)
+        
+        name = name_streak[0]
+        best_streak = name_streak[1]
+        
         print(f"Your longest streak of all habits is {best_streak} for habit {name}.")
-        back_or_quit()
+        back_or_quit_or_track()
 
     elif option == length + 2:
+        clear_screen()
         sorted_freq_set = sorted(analysis.get_frequencies(db))
 
         for i in range(len(sorted_freq_set)):
@@ -205,7 +212,7 @@ def tracking_choice_menu():
         for i in range(len(habits_with_chosen_freq)):
             print(f"{i+1}. {habits_with_chosen_freq[i]}")
 
-        back_or_quit()
+        back_or_quit_or_track()
         
     elif option == length + 3:
         clear_screen()
@@ -226,7 +233,7 @@ def tracking_choice_menu():
         print(f"\nThe habit(s) that you struggled with the most in the last {period_no_days} days is/are: ")
         for habit_name in most_streakloss_habits:
             print(f"{habit_name} with {habit_streakloss[habit_name]} streak losses")
-        back_or_quit()
+        back_or_quit_or_track()
 
 """
 Functionalities related to tracking individual habits (streak info etc).
@@ -246,7 +253,7 @@ def indiv_habit_tracking_menu(habit):
     if option == 2:
         print(f"Your best streak for {habit.name} is {analysis.get_longest_streak_habit(db, habit)}")
 
-    back_or_quit()
+    back_or_quit_or_track()
 
 
 def get_num_option(option_list):
@@ -273,7 +280,7 @@ def get_date_frominput():
         
            
     #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
-    #to just the dates
+    #to just the dates. The time is set arbitrarly as the dateetime.date objects do not have a timestamp() method 
     date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
     return int(date.timestamp())
 
@@ -300,7 +307,7 @@ def editing_menu(habit):
     
     print("Habit edited!")
     
-    back_or_quit()
+    back_or_quit_or_track()
 
 def not_tracking_habits():
 
@@ -314,18 +321,20 @@ def not_tracking_habits():
     elif option == 2:
         main_menu()
 
-def back_or_quit():
+def back_or_quit_or_track():
 
-    user_choice = input("\nType 'm/M' for main menu or 'q/Q' to quit program: ").lower()
+    user_choice = input("\nType 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
 
-    while(user_choice != 'q' and user_choice != 'm'):
+    while(user_choice != 'q' and user_choice != 'm' and user_choice != 't'):
         user_choice = input("Not a valid option. Type 'm/M' for main menu or 'q/Q' to quit program: ").lower()
 
     if user_choice == 'q':
         print("Program quit.")
         sys.exit()
-    else:
+    elif user_choice == 'm':
         main_menu()
+    else:
+        tracking_choice_menu()
 
 def clear_screen():
     os = sys.platform

@@ -1,6 +1,9 @@
-import unittest, src
-from src import analysis, testdata, habitclass, database
-
+import unittest, sys
+#from src import analysis, testdata, habitclass, database
+import src.analysis as analysis
+import src.testdata as testdata
+import src.habitclass as habitclass
+import src.database as database
 
 
 class TestAnalysisModule(unittest.TestCase):
@@ -31,21 +34,45 @@ class TestAnalysisModule(unittest.TestCase):
         
         self.assertEqual(self.habit_list[0].description, "Go to the gym every 2 days")
         self.assertEqual(self.habit_list[1].description, "Clean your room once a week")
-        self.assertEqual(self.habit_list[2].description, "Meditate daily")
-        self.assertEqual(self.habit_list[3].description, "Water plants every 5 days")
+        self.assertEqual(self.habit_list[2].description, "Meditate daily using Headspace")
+        self.assertEqual(self.habit_list[3].description, "Water plants every week")
         self.assertEqual(self.habit_list[4].description, "Summarize expenses monthly")
 
         self.assertEqual(self.habit_list[0].frequency, 2)
         self.assertEqual(self.habit_list[1].frequency, 7)
         self.assertEqual(self.habit_list[2].frequency, 1)
-        self.assertEqual(self.habit_list[3].frequency, 5)
+        self.assertEqual(self.habit_list[3].frequency, 7)
         self.assertEqual(self.habit_list[4].frequency, 30)
     
     def test_get_habit_data(self):
         for habit in self.habit_list:
             self.assertTrue(len(analysis.get_habit_data(self.test_db, habit)) > 0)
-
-   
+    
+    def test_get_habits_with_freq(self):
+        habits_daily_names = ["Meditation"]
+        habits_weekly_names = ["Clean room", "Water plants"]
+        habits_monthly_names = ["Budget"]
+        habits_every_two_names = ["Exercise"]
+        
+        self.assertEqual(analysis.get_habits_with_freq(self.test_db, 1), habits_daily_names)
+        self.assertEqual(analysis.get_habits_with_freq(self.test_db, 7), habits_weekly_names)
+        self.assertEqual(analysis.get_habits_with_freq(self.test_db, 30), habits_monthly_names)
+        self.assertEqual(analysis.get_habits_with_freq(self.test_db, 2), habits_every_two_names)
+    
+    def test_get_longest_streak_all(self):
+        self.assertEqual(analysis.get_longest_streak_all(self.test_db), ("Meditation", 17))
+    
+    def test_get_longest_streak_habit(self):
+        self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[0]), 9)
+        self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[1]), 7)
+        self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[2]), 17)
+        self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[3]), 8)
+        self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[4]), 3)
+    
+    #see analysis.streakloss_in_period for clarification on how this is counted in test mode.
+    def test_find_most_streakloss_in_period(self):
+        pass
+        
 if __name__ == "__main__":
     unittest.main()
 

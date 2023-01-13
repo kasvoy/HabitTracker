@@ -5,6 +5,7 @@ class DatabaseConnection:
     def __init__(self, name):
         self.conn = sqlite3.connect(name)
         self.cursor = self.conn.cursor()
+        self.name = name
 
         #Date entry is stored as the number of seconds since Jan 1 1970 (Unix time)
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS habit_list(

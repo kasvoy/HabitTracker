@@ -1,4 +1,4 @@
-from src import analysis
+from . import analysis
 import time, datetime, copy
 
 class Habit:

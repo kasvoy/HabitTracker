@@ -1,4 +1,4 @@
-from src import habitclass
+from . import habitclass
 from datetime import date, timedelta, datetime
 
 #Helper function for check_off method in Habit class (habitclass.Habit)
@@ -31,17 +31,17 @@ def find_block_number(db, habit, entry_date):
 
 def get_longest_streak_habit(db, habit):
 
-    db.cursor.execute("SELECT current_streak FROM habit_data WHERE habit_name = ?", (habit.name,))
-    return max(db.cursor.fetchall())[0]
+    db.cursor.execute("SELECT MAX(current_streak) FROM habit_data WHERE habit_name = ?", (habit.name,))
+    return db.cursor.fetchone()[0]
 
 def get_longest_streak_all(db):
 
-    db.cursor.execute("SELECT current_streak FROM habit_data")
-    best_streak = max(db.cursor.fetchall())[0]
-    db.cursor.execute("SELECT habit_name FROM habit_data WHERE current_streak = ?", (best_streak,))
-    name = db.cursor.fetchone()[0]
+    db.cursor.execute("""
+                    SELECT habit_name, current_streak 
+                    FROM habit_data WHERE current_streak = (SELECT MAX(current_streak) FROM habit_data)
+                    """)
 
-    return [name, best_streak]
+    return db.cursor.fetchall()[0]
 
 def print_habit_data(db, habit):
 
@@ -76,11 +76,22 @@ def streakloss_in_period(db, habit, period_nodays):
         return "Didn't engage in habit in the set period"
 
     delta = timedelta(days = period_nodays)
+    print(habit.name, delta)
     
-    #last_date = datetime.now() - delta
-    last_date = datetime.fromtimestamp(results[-1][1]) - delta
-
+    """
+    Since the dates in the test database are hardcoded, the results of the tests would change depending
+    on when the tests are run.
+    Because of this, in test mode we consider "now" to be April 30 2023 - this is the date of the last entry 
+    for all predefined habits.
+    When app is used in regular mode, "now" is just today's date.
+    """
     
+    if db.name == "test.db":
+        last_date = datetime.fromtimestamp(results[-1][1]) - delta
+    else:
+        last_date = datetime.now() - delta
+    
+     
     #last_date but in a unix timestamp (as stored in the database)
     last_date_seconds = int(last_date.timestamp())
 
@@ -95,12 +106,18 @@ def streakloss_in_period(db, habit, period_nodays):
             cutoff_index = index
             break
     
+    no_streaklosses = 0
+    
+    if dates[cutoff_index] > last_date_seconds:
+        pass
+    
     entries_in_period = results[cutoff_index:]
     
     for entry in entries_in_period:
+        print(entry[0])
         streaks.append(entry[0])
             
-    no_streaklosses = 0
+    
     
     for i in range(len(streaks) - 1):
         if (streaks[i + 1] - streaks[i]) < 0:
@@ -133,7 +150,7 @@ def get_current_habits(db):
 
     return habit_obj_list
 
-def get_habit_data(db, habit):
+def get_habit_data(db,  habit):
 
     db.cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit.name,))
     return db.cursor.fetchall()

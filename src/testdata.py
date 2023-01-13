@@ -8,15 +8,14 @@ def main():
     
     exercise = Habit("Exercise", "Go to the gym every 2 days", 2)
     clean = Habit("Clean room", "Clean your room once a week", 7)
-    meditation = Habit("Meditation", "Meditate daily", 1)
-    water_plants = Habit("Water plants", "Water plants every 5 days", 5)
+    meditation = Habit("Meditation", "Meditate daily using Headspace", 1)
+    water_plants = Habit("Water plants", "Water plants every week", 7)
     budget = Habit("Budget", "Summarize expenses monthly", 30)
     
 
     habit_list = [exercise, clean, meditation, water_plants, budget]
 
 
-    #streak losses - 3
     exercise_testdates = [
 
     time.mktime(time.strptime("20 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
@@ -50,11 +49,11 @@ def main():
     time.mktime(time.strptime("21 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("23 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("25 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("27 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("28 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("30 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     
     ]
 
-    #streak losses -1 
     clean_room_testdates = [
 
     time.mktime(time.strptime("20 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
@@ -69,7 +68,7 @@ def main():
     time.mktime(time.strptime("30 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
 
     ]
-    #streak losses - 3
+
     meditation_testdates = [
 
     time.mktime(time.strptime("20 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
@@ -117,6 +116,29 @@ def main():
     time.mktime(time.strptime("04 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("05 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("06 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("07 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("08 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("09 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("10 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("11 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("12 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("13 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("14 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("15 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("17 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("18 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("19 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("20 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("21 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("22 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("23 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("24 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("25 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("26 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("27 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("28 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("29 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("30 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
 
 
     ]
@@ -126,26 +148,25 @@ def main():
     time.mktime(time.strptime("20 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("22 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("21 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("30 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+
         
     ]
     
     water_plants_testdates = [
         
     time.mktime(time.strptime("20 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("25 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("02 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("07 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("12 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("17 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("27 Feb 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("08 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("15 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("22 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("27 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("29 Mar 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("05 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("10 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("15 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("20 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    time.mktime(time.strptime("25 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("12 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("19 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
+    time.mktime(time.strptime("23 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
     time.mktime(time.strptime("30 Apr 2023 20:15:27", "%d %b %Y %H:%M:%S")),
-    
+
     ]
     
     try:
