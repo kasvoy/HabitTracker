@@ -1,10 +1,5 @@
-import unittest, sys
-#from src import analysis, testdata, habitclass, database
-import src.analysis as analysis
-import src.testdata as testdata
-import src.habitclass as habitclass
-import src.database as database
-
+import unittest
+from src import analysis, testdata, habitclass, database
 
 class TestAnalysisModule(unittest.TestCase):
     
@@ -71,7 +66,15 @@ class TestAnalysisModule(unittest.TestCase):
     
     #see analysis.streakloss_in_period for clarification on how this is counted in test mode.
     def test_find_most_streakloss_in_period(self):
-        pass
+        most_last_week = {"Exercise": 1, "Clean room": 1}
+        most_last_two_weeks = {"Exercise": 2}
+        most_last_month = {"Exercise": 3}
+        most_last_three_months = {"Exercise": 6}
+
+        self.assertEqual(analysis.find_most_streakloss_in_period(self.test_db, 7), most_last_week)
+        self.assertEqual(analysis.find_most_streakloss_in_period(self.test_db, 14), most_last_two_weeks)
+        self.assertEqual(analysis.find_most_streakloss_in_period(self.test_db, 30), most_last_month)
+        self.assertEqual(analysis.find_most_streakloss_in_period(self.test_db, 90), most_last_three_months)
         
 if __name__ == "__main__":
     unittest.main()

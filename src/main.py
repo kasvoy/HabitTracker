@@ -222,17 +222,19 @@ def tracking_choice_menu():
         period_no_days = input("\nPut the number of days from today you want to know how many streak losses you had: ")
         
         while(not period_no_days.isdigit() or (period_no_days.isdigit() and int(period_no_days) < 1)):
-            period_no_days = input("Not a valid period. Pick a whole number of days: ")
+            period_no_days = input("Not a valid period. Pick a whole positive number of days: ")
         
+        clear_screen()
+
         habit_streakloss = analysis.find_most_streakloss_in_period(db, int(period_no_days))
         
-        most_streakloss_habits = [
-        habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
-        ]
-        
-        print(f"\nThe habit(s) that you struggled with the most in the last {period_no_days} days is/are: ")
-        for habit_name in most_streakloss_habits:
-            print(f"{habit_name} with {habit_streakloss[habit_name]} streak losses")
+        if not habit_streakloss:
+            print(f"No streak losses in the last {period_no_days} days! Keep up the good work!")
+        else:
+            print(f"The habit(s) that you struggled with the most in the last {period_no_days} days is/are: ")
+            for habit_name, streakloss in habit_streakloss.items():
+                print(f"\n\033[1m{habit_name}\033[0m with \033[1m{streakloss}\033[0m streak losses.")
+
         back_or_quit_or_track()
 
 """
@@ -280,7 +282,7 @@ def get_date_frominput():
         
            
     #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
-    #to just the dates. The time is set arbitrarly as the dateetime.date objects do not have a timestamp() method 
+    #to just the dates. The time is set arbitrarly as the datetime.date objects do not have a timestamp() method 
     date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
     return int(date.timestamp())
 

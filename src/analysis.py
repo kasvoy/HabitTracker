@@ -68,16 +68,15 @@ def get_habits_with_freq(db, freq):
 
     return names
 
-def streakloss_in_period(db, habit, period_nodays):
+def streakloss_in_period(db, habit, period_no_days):
     db.cursor.execute("SELECT current_streak, date FROM habit_data WHERE habit_name = ?", (habit.name,))
     results = db.cursor.fetchall()
     
     if len(results) == 0:
         return "Didn't engage in habit in the set period"
 
-    delta = timedelta(days = period_nodays)
-    print(habit.name, delta)
-    
+    delta = timedelta(days = period_no_days)
+
     """
     Since the dates in the test database are hardcoded, the results of the tests would change depending
     on when the tests are run.
@@ -100,40 +99,51 @@ def streakloss_in_period(db, habit, period_nodays):
     streaks = []
     for entry in results:
         dates.append(entry[1])
+    for entry in results:
+        streaks.append(entry[0])
     
     for index, date in enumerate(dates):
         if date == last_date_seconds or date > last_date_seconds:
             cutoff_index = index
             break
-    
+ 
     no_streaklosses = 0
-    
-    if dates[cutoff_index] > last_date_seconds:
-        pass
+
+    if dates[cutoff_index] > last_date_seconds and streaks[cutoff_index] == 1:
+        if streaks[cutoff_index - 1] > 1:
+            if (datetime.fromtimestamp(dates[cutoff_index - 1]) + timedelta(days=habit.frequency)) >= last_date:
+                no_streaklosses += 1
     
     entries_in_period = results[cutoff_index:]
-    
-    for entry in entries_in_period:
-        print(entry[0])
-        streaks.append(entry[0])
-            
-    
-    
-    for i in range(len(streaks) - 1):
-        if (streaks[i + 1] - streaks[i]) < 0:
+
+    for i in range(len(entries_in_period) - 1):
+        if (entries_in_period[i + 1][0] - entries_in_period[i][0]) < 0:
             no_streaklosses += 1
 
     return no_streaklosses
 
-def find_most_streakloss_in_period(db, period_nodays):
+def find_most_streakloss_in_period(db, period_no_days):
 
     habit_list = get_current_habits(db)
     habit_streakloss = dict()
+    most_habit_streakloss = dict()
         
     for habit in habit_list:
-        habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_nodays)})
+        if streakloss_in_period(db, habit, period_no_days) != 0:
+           habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_no_days)})
     
-    return habit_streakloss 
+    most_streakloss_habit_names = [
+    habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
+        ]
+    
+    for habit_name in most_streakloss_habit_names:
+        most_habit_streakloss.update({habit_name: habit_streakloss[habit_name]})
+    
+    if len(most_habit_streakloss) == 0:
+        return None
+    
+    
+    return most_habit_streakloss 
 
 def get_current_habits(db):
 
