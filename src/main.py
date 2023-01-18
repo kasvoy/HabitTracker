@@ -1,8 +1,11 @@
 import sys, subprocess, datetime
 from . import database, analysis
 from . import habitclass
-    
-db = database.DatabaseConnection("test.db")
+
+if len(sys.argv) == 2 and sys.argv[1].lower() == 'test':
+    db = database.DatabaseConnection("test.db")
+else:
+    db = database.DatabaseConnection("database.db")
 
 def main_menu():
     clear_screen()

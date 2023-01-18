@@ -7,6 +7,7 @@ class Habit:
         self.name = name
         self.description = description
         self.frequency = frequency
+        self.current_streak = None
 
     """
     The check_off method calculates the streak of a new habit entry and adds the entry to the database.

@@ -63,7 +63,7 @@ class TestAnalysisModule(unittest.TestCase):
         self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[2]), 17)
         self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[3]), 8)
         self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[4]), 3)
-    
+
     #see analysis.streakloss_in_period for clarification on how this is counted in test mode.
     def test_find_most_streakloss_in_period(self):
         most_last_week = {"Exercise": 1, "Clean room": 1}

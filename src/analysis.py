@@ -160,7 +160,7 @@ def get_current_habits(db):
 
     return habit_obj_list
 
-def get_habit_data(db,  habit):
+def get_habit_data(db, habit):
 
     db.cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit.name,))
     return db.cursor.fetchall()
