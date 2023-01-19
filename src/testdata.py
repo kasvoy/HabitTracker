@@ -2,6 +2,22 @@ import time, sqlite3
 from src.habitclass import Habit
 from src.database import DatabaseConnection
 
+"""
+This program generates and populates the testdata database ("test.db").
+For every habit the first log is on Feb 20 2023 and the last log is on Apr 30 2023.
+The time 20:15:17 is arbitrary and irrelevant because the functionality of the habit tracking components
+relies only on the calendar days, not the times. This means that "the next day" is the next calendar day, not 
+24 hours after.
+
+This program is used in the tests as well as when the user wishes to inspect this data using the main
+app running either:
+
+python3 habit.py test
+python3 -m src.main test
+
+(or python instead of python3 if on Windows).
+"""
+
 def main():
     
     test_db = DatabaseConnection("test.db")
@@ -11,10 +27,8 @@ def main():
     meditation = Habit("Meditation", "Meditate daily using Headspace", 1)
     water_plants = Habit("Water plants", "Water plants every week", 7)
     budget = Habit("Budget", "Summarize expenses monthly", 30)
-    
 
     habit_list = [exercise, clean, meditation, water_plants, budget]
-
 
     exercise_testdates = [
 

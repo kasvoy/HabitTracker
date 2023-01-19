@@ -4,6 +4,7 @@ import time, datetime, copy
 class Habit:
 
     def __init__(self, name, description, frequency):
+
         self.name = name
         self.description = description
         self.frequency = frequency
@@ -58,10 +59,11 @@ class Habit:
             The next if statement is the situation in which the user logs an entry from the past
             (meaning, on the date before the latest habit entry)
             
-            In that situation - we 1. find the closest date before the desired date for backlogging.
-            2. Copy and remove all entries after that closest date from the database.
-            3. Insert the new entry (self.check_off(backlogged_date_in_seconds))
-            4. Reinsert all the entries that were removed before
+            In that situation - we:
+            1. Find the closest date before the desired date for backlogging,
+            2. Copy and remove all entries after that closest date from the database,
+            3. Insert the new entry (self.check_off(db, backlogged_date_in_seconds)),
+            4. Reinsert all the entries that were removed before.
             """
             if current_entry_date < previous_entry_date:
                 dates = []
