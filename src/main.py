@@ -1,4 +1,4 @@
-import sys, subprocess, datetime
+import sys, subprocess, datetime, sqlite3
 from . import database, analysis
 from . import habitclass
 
@@ -74,14 +74,20 @@ def add_habit_menu():
 
     habit_name = input("Create habit name: ").strip()
     description = input("Set a description for your habit: ")
-    frequency = input("Set frequency (in number of days): ")
+    frequency = input("Set frequency: ")
 
     while(not frequency.isdigit() or (frequency.isdigit() and int(frequency) < 1)):
         frequency = input("Frequency must be a positive integer: ")
 
     habit = habitclass.Habit(habit_name, description, frequency)
 
-    db.add_habit(habit)
+    try:
+        db.add_habit(habit)
+    except sqlite3.IntegrityError:
+        clear_screen()
+        print("You're trying to add a habit with an exact same name as one of your habits. Add a habit with a different name from the main menu.")
+        back_or_quit_or_track()
+
 
     clear_screen()
     print("Habit added!")
@@ -112,9 +118,9 @@ def tracking_menu():
 
         else:
             clear_screen()
-            print("YOUR HABITS")
+            print("\033[1m\u001b[32mYOUR HABITS\u001b[0m")
             for habit in habit_list:
-                print('\n\033[1m',habit.name.upper(),'\033[0m')
+                print('\n\033[1m',habit.name,'\033[0m')
                 print(f"Description: {habit.description}")
 
                 if habit.frequency == 1:
@@ -271,23 +277,29 @@ def get_num_option(option_list):
     return int(user_choice)
 
 def get_date_frominput():
-    year = input("Enter year: ")
-    while(not year.isdigit() or (year.isdigit() and int(year) < 1970)):
+    year = input("Enter year (type 'm' if you didn't intend this): ")
+
+    #giving the user the option to back out in case of missclick
+    while((not year.isdigit() and year.lower() != 'm') or (year.isdigit() and int(year) < 1970)):
         year = input("Enter a valid year (Gregorian calendar, before 1970): ")
+    
+    if year.lower() == 'm':
+        main_menu()
+
+    else:
+        month = input("Enter month (1-12): ")
+        while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 13)))):
+            month = input("Enter a valid month (1-12): ")
+                
+        day = input("Enter day: ")
+        while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 31)))):
+            month = input("Enter a valid day - depends on month!): ")
         
-    month = input("Enter month (1-12): ")
-    while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 13)))):
-        month = input("Enter a valid month (1-12): ")
             
-    day = input("Enter day: ")
-    while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 31)))):
-        month = input("Enter a valid day - depends on month!): ")
-        
-           
-    #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
-    #to just the dates. The time is set arbitrarly as the datetime.date objects do not have a timestamp() method 
-    date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
-    return int(date.timestamp())
+        #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
+        #to just the dates. The time is set arbitrarly as the datetime.date objects do not have a timestamp() method 
+        date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
+        return int(date.timestamp())
 
 def editing_menu(habit):
     clear_screen()

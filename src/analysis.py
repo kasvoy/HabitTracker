@@ -45,6 +45,9 @@ def get_longest_streak_all(db):
 
 def print_habit_data(db, habit):
 
+    if len(get_habit_data(db, habit)) == 0:
+        print(f"No entries for {habit.name} yet! You can check off the habit from the main menu")
+
     for entry in get_habit_data(db, habit):
         print(f"Date: {date.fromtimestamp(entry[1])}, streak: {entry[2]}")
 
