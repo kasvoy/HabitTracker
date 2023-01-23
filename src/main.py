@@ -50,8 +50,8 @@ def check_off_menu():
         print(f"Checking off habit \033[1m{tracked_habit.name}\033[0m\n")
         
         
-        print(f"1. Check off habit - NOW ({date_today_string})")
-        print("2. Forgot to check off habit before and maybe lost a streak? Check off for date in the past.")
+        print(f"\n\033[1m1. Check off habit - NOW ({date_today_string})\033[0m")
+        print("\n\n2. Forgot to check off habit before and maybe lost a streak? Check off for date in the past.")
         option = get_num_option([1,2])
         
         if option == 1:                
@@ -159,7 +159,7 @@ def tracking_menu():
                         db.delete_habit(chosen_habit)
 
                         clear_screen()
-                        print(f"{chosen_habit.name} deleted.")
+                        print(f"\033[1m{chosen_habit.name}\033[0m deleted.")
                         back_or_quit_or_track()
 
             elif option2 == 2:
@@ -259,7 +259,7 @@ def indiv_habit_tracking_menu(habit):
     option = get_num_option([1, 2])
 
     if option == 1:
-        analysis.print_habit_data(db, habit)
+        print_habit_data(db, habit)
 
     if option == 2:
         print(f"Your best streak for {habit.name} is {analysis.get_longest_streak_habit(db, habit)}")
@@ -343,7 +343,7 @@ def back_or_quit_or_track():
     user_choice = input("\nType 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
 
     while(user_choice != 'q' and user_choice != 'm' and user_choice != 't'):
-        user_choice = input("Not a valid option. Type 'm/M' for main menu or 'q/Q' to quit program: ").lower()
+        user_choice = input("Not a valid option. Type 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
 
     if user_choice == 'q':
         print("Program quit.")
@@ -352,6 +352,22 @@ def back_or_quit_or_track():
         main_menu()
     else:
         tracking_choice_menu()
+
+def print_habit_data(db, habit):
+
+    """
+    A function that prints all the habit logs in the habit_data table
+
+    Parameters:
+                db: a database.DatabaseConnection object
+                habit: a habitclass.Habit object
+    """
+
+    if len(analysis.get_habit_data(db, habit)) == 0:
+        print(f"No entries for {habit.name} yet! You can check off the habit from the main menu")
+
+    for entry in analysis.get_habit_data(db, habit):
+        print(f"Date: {datetime.date.fromtimestamp(entry[1])}, streak: {entry[2]}")
 
 def clear_screen():
     os = sys.platform

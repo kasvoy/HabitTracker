@@ -1,9 +1,22 @@
 from . import habitclass
 from datetime import date, timedelta, datetime
 
-#Helper function for check_off method in Habit class (habitclass.Habit)
 def find_block_number(db, habit, entry_date):
-    
+    """
+    Helper function for check_off method in Habit class (habitclass.Habit). It finds on which "block" of [habit.frequency] 
+    days a particular date falls on.
+    Check habitclass.Habit.check_off() for more details.
+
+    Parameters:
+                db: a database.DatabaseConnection object
+                habit: a habitclass.Habit object
+                entry_date: a datetime.date object
+
+    Returns:
+                block_number: an integer signyfing the block number.
+
+    """
+
     block_number = 0
     habit_data = get_habit_data(db, habit)
     
@@ -31,10 +44,33 @@ def find_block_number(db, habit, entry_date):
 
 def get_longest_streak_habit(db, habit):
 
+    """
+    A function that returns the longest run streak for a given habit.
+
+    Parameters:
+                db: a database.DatabaseConnection object
+                habit: a habitclass.Habit object
+    Returns:
+                The longest run streak for a given habit: Integer. Returned as the first entry in a db.cursor.fetchone tuple.
+
+    """
+
     db.cursor.execute("SELECT MAX(current_streak) FROM habit_data WHERE habit_name = ?", (habit.name,))
     return db.cursor.fetchone()[0]
 
+
 def get_longest_streak_all(db):
+
+    """
+    A function that returns the longest run streak for all habits in the database.
+
+    Parameters:
+                db: a database.DatabaseConnection object
+                habit: a habitclass.Habit object
+    Returns:
+                The longest run streak for all habits in the database: Integer. Returned as the first entry in a db.cursor.fetchall tuple.
+
+    """
 
     db.cursor.execute("""
                     SELECT habit_name, current_streak 
@@ -43,15 +79,19 @@ def get_longest_streak_all(db):
 
     return db.cursor.fetchall()[0]
 
-def print_habit_data(db, habit):
-
-    if len(get_habit_data(db, habit)) == 0:
-        print(f"No entries for {habit.name} yet! You can check off the habit from the main menu")
-
-    for entry in get_habit_data(db, habit):
-        print(f"Date: {date.fromtimestamp(entry[1])}, streak: {entry[2]}")
 
 def get_frequencies(db):
+
+    """
+    A helper function for the below get_habits_with_freq function. It returns a list of all the different frequencies of the habits in the 
+    database.
+
+    Parameters:
+                db: a database.DatabaseConnection object
+
+    Returns:
+                frequency_list: a list of integers with the frequencies of all the habits in the database.
+    """
 
     db.cursor.execute("SELECT frequency FROM habit_list")
     frequency_list = set()
@@ -62,6 +102,17 @@ def get_frequencies(db):
     return frequency_list
 
 def get_habits_with_freq(db, freq):
+    """
+    A function that returns the names of the habits that have a frequency of the parameter [freq] (habit.frequency = freq)
+
+    Parameters:
+                db: a database.DatabaseConnection object.
+                freq: Integer. Represents the frequency of a habit.
+
+    Returns:
+                names: a list of strings representing the names of the habits with the desired frequency.
+    
+    """
 
     db.cursor.execute("SELECT habit_name FROM habit_list WHERE frequency = ?", (freq,))
     names = []
@@ -72,6 +123,18 @@ def get_habits_with_freq(db, freq):
     return names
 
 def streakloss_in_period(db, habit, period_no_days):
+    """
+    A function that returns the number of streak losses of a particular habit in a given period.
+
+    Parameters:
+                db: a database.DatabaseConnection object.
+                habit: a habitclass.Habit object.
+                period_no_days: integer. The number of days from today to the past that represents the period. Example: period_no_days = 30 -> last 30 days.
+
+    Returns:
+                no_streaklosses: int. number of streak losses of a particular habit in a given period.
+    """
+
     db.cursor.execute("SELECT current_streak, date FROM habit_data WHERE habit_name = ?", (habit.name,))
     results = db.cursor.fetchall()
     
@@ -126,7 +189,18 @@ def streakloss_in_period(db, habit, period_no_days):
     return no_streaklosses
 
 def find_most_streakloss_in_period(db, period_no_days):
+    """
+    A function that returns the habits with the most streak losses in a given period with the number of these streak losses
+    thanks to the above streakloss_in_period function.
 
+    Parameters:
+                db: a database.DatabaseConnection object.
+                period_no_days: int. The number of days from today to the past that represents the period. Example: period_no_days = 30 -> last 30 days.
+                
+    Returns:
+                most_habit_streakloss: dictionary. Keys - names of habits with the most streak losses (str). Values - the streak losses (int)
+    
+    """
     habit_list = get_current_habits(db)
     habit_streakloss = dict()
     most_habit_streakloss = dict()
@@ -150,6 +224,17 @@ def find_most_streakloss_in_period(db, period_no_days):
 
 def get_current_habits(db):
 
+    """
+    A function that gets all the habits currently tracked from the habit_list table of the database and packages them into habitclass.Habit objects
+    for use in all other parts of the program.
+
+    Parameters:
+                db: a database.DatabaseConnection object.
+            
+    Returns:
+                habit_obj_list: a list of habitclass.Habit objects representing all the habits in the habit_list table of the database.
+    
+    """
     db.cursor.execute("SELECT * FROM habit_list")
     tuples_list = db.cursor.fetchall()
     habit_obj_list = []
@@ -164,6 +249,17 @@ def get_current_habits(db):
     return habit_obj_list
 
 def get_habit_data(db, habit):
+
+    """
+    A function that gets all the habit logs for a given habit: the habit_data table values for that habit.
+    Parameters:
+                db: a database.DatabaseConnection object.
+                habit: a habitclass.Habit object.
+            
+    Returns:
+                a tuple of all the habit logs for a given habit. Contains the habit name, date of check off, streak at that date.
+    
+    """
 
     db.cursor.execute("SELECT * FROM habit_data WHERE habit_name = ?", (habit.name,))
     return db.cursor.fetchall()
