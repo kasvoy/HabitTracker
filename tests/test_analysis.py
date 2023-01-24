@@ -5,6 +5,7 @@ class TestAnalysisModule(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls): 
+        """Regenerate the test data before start of testing. This is what causes the tests to run slow."""
         testdata.main()
     
     def setUp(self):

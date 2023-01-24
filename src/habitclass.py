@@ -2,6 +2,23 @@ from . import analysis
 import time, datetime, copy
 
 class Habit:
+    
+    """
+    Habit - a class representing a habit that can be tracked and analysed by other parts of the Habit Tracker.
+
+    Attributes:
+                name: str - Name of the habit
+                description: str - String describing the habit
+                frequency: int - Number representing per how many days the user plans to engage in the habit
+                current_streak: int - The run streak of the habit. Example   -  if the user has checked off a daily habit 3 days in a row
+                                                                                the current_streak is set to 3 in the check_off method.
+
+    Methods:
+                check_off(db, seconds_time) - updates the streak and inserts habit entry into the database.
+                set_streak(db) -    helper method for when a habit object is newly created for the purpose of the analysis.get_current_habits function.
+                                    it gets the last streak from the habit_data table from the database and sets it to reflect the current streak.
+    """
+
 
     def __init__(self, name, description, frequency):
 
@@ -10,38 +27,53 @@ class Habit:
         self.frequency = frequency
         self.current_streak = None
 
-    """
-    The check_off method calculates the streak of a new habit entry and adds the entry to the database.
-    
-    For the purpose of this method, the start date of the habit is the latest date when the streak was set to 1
-    (it was either started for the first time or had been broken).
-    
-    We can imagine blocks of {self.frequency} number of days drawn from the start date.
-    
-    FOR EXAMPLE:    habit has self.frequency = 7 (habit done weekly)
-                    habit start date is 1 Jan
-                    
-                    block number 1 is the 7 days from Jan 1 to Jan 7
-                    block number 2 is the 7 days from Jan 8 to Jan 14 
-                    
-                    Following this:
-                    The date Jan 3 is in block number 1
-                    The date Jan 14 is in block number 2
-                    The date Jan 30 is in block number 5
-    
-    Keeping that in mind ,the streak is calculated as follows:
-    
-    - If the elapsed time in days between the current date (the date for which we are checking off the habit)
-    and the previous entry date is more than the frequency, the streak is broken and set to 1.
-    
-    - Otherwise, if the elapsed time in days between the current and previous date is less or equal to the frequency:
-        If the current entry date is in the same block as the previous entry date:
-            set the streak for the same one as the previous entry (neither breaking or increasing streak)
-        Else - the current entry date is on the next block from the previous entry date:
-            increase the streak (set it to [previous_streak + 1])     
-    """
 
     def check_off(self, db, seconds_time = int(time.time())):
+
+        """
+        The check_off method calculates the streak of a new habit entry and adds the entry to the database.
+
+        We assume that "next day" means the next day on the calendar. Even if the user checked off a habit one minute before midnight
+        and then another time 2 minutes later, it is still counted as the next day, because this is what the calendar shows.
+        This design was chosen as it is convenient working with the datetime.timedelta objects in this way and reflects the view of the author
+        on what "daily" or "weekly" means.
+        
+        For the purpose of this method, the start date of the habit is the latest date when the streak was set to 1
+        (it was either started for the first time or had been broken).
+        
+        We can imagine blocks of {self.frequency} number of days drawn from the start date.
+        
+        FOR EXAMPLE:    habit has self.frequency = 7 (habit done weekly)
+                        habit start date is 1 Jan
+                        
+                        block number 1 is the 7 days from Jan 1 to Jan 7
+                        block number 2 is the 7 days from Jan 8 to Jan 14 
+                        
+                        Following this:
+                        The date Jan 3 is in block number 1
+                        The date Jan 14 is in block number 2
+                        The date Jan 30 is in block number 5
+        
+        Keeping that in mind ,the streak is calculated as follows:
+        
+        - If the elapsed time in days between the current date (the date for which we are checking off the habit)
+        and the previous entry date is more than the frequency, the streak is broken and set to 1.
+        
+        - Otherwise, if the elapsed time in days between the current and previous date is less or equal to the frequency:
+            If the current entry date is in the same block as the previous entry date:
+                set the streak for the same one as the previous entry (neither breaking or increasing streak)
+            Else - the current entry date is on the next block from the previous entry date:
+                increase the streak (set it to [previous_streak + 1])     
+        
+
+
+        Parameters:
+                    db: a database.DatabaseConnection object
+                    seconds_time: an integer representing the unix timestamp of a date of check off. Defaults to now.
+
+
+        Sets the habit's current_streak attribute and inserts a log into the database.
+        """
 
         habit_data = analysis.get_habit_data(db, self)
 
@@ -108,11 +140,14 @@ class Habit:
                                 
                 db.insert_habit_entry(self, seconds_time)
                 
-    """    
-    Helper method for analysis.get_current_habits.
-    It sets the streaks for the newly created habit objects based on the data in the database.
-    """      
+     
     def set_streak(self, db):
+
+        """    
+        Helper method for analysis.get_current_habits.
+        It sets the streaks for the newly created habit objects based on the data in the database.
+        """ 
+
         habit_data = analysis.get_habit_data(db, self)
         
         #If there are no entries - set streak to zero

@@ -2,7 +2,33 @@ import sqlite3
 
 class DatabaseConnection:
     
+    """
+    A class for handling all database functionality of the program.
+
+    Attributes:
+                conn: an sqlite3 connection object
+                cursor: an sqlite3 cursor
+                name: str
+    Methods:
+                add_habit(habit) - add a habit to the habit_list table'
+                insert_habit_entry(habit, seconds_time) - insert a habit log (add to habit_data table). Called when user checks off the habit.
+                delete_last_no_entries_for_habit(habit, num_to_remove) -    remove the last [num_to_remove] entries from the database. 
+                                                                            Used for backlogging.
+                delete_habit(habit) - delete a habit from the database along with all its data.
+                edit_habit(habit, new_values) - edit the habit and update its name and values in the tables.
+    """
+
     def __init__(self, name):
+
+        """
+        Initialize the database object and create 2 tables: habit_list and habit_data.
+
+        habit_list - holds the information about the defined habits - their name, description and frequency
+
+        habit_data - holds the habit logs along with their name as the identifier, the date of entry (as a UNIX timestamp) 
+        and the streak at the date of entry.
+        """
+
         self.conn = sqlite3.connect(name)
         self.cursor = self.conn.cursor()
         self.name = name

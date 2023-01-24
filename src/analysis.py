@@ -14,7 +14,6 @@ def find_block_number(db, habit, entry_date):
 
     Returns:
                 block_number: an integer signyfing the block number.
-
     """
 
     block_number = 0

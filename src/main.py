@@ -8,6 +8,16 @@ else:
     db = database.DatabaseConnection("database.db")
 
 def main_menu():
+    """
+    The CLI is built as a series of menus that are python functions called when the user inputs a numeric option 
+    corresponding to the appropriate menu. Getting and validating the user input is handled by the get_num_option() function at the bottom of this file.
+    This design was chosen to limit the user needing to input from the keyboard.
+
+    The following is the main menu from which the user can access all parts of the program. The user can go back here from any menu after they use it
+    thanks to the back_or_quit_or_track() menu at the bottom of this file.
+    """
+
+
     clear_screen()
     print("\033[95m\033[1mHABIT PYTRACKER EARLY RELEASE 1.1.\033[0m\n")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
@@ -29,10 +39,17 @@ def main_menu():
         sys.exit()
 
 def check_off_menu():
+
+    """
+    This is the menu that allows the user to 'check off' a habit, meaning insert a log into the database.
+    This also updates the streak of the habit object accordingly - see .habitclass for how this is handled.
+    """
+
     clear_screen()
     print("\033[1mCHECK OFF HABIT - NEW HABIT ENTRY\033[0m")
     print("\nWhich habit do you want to check off?")
 
+    #get the habits currently in the database - habit_list is a list of habit objects.
     habit_list = analysis.get_current_habits(db)
 
     if len(habit_list) == 0:
@@ -48,7 +65,6 @@ def check_off_menu():
         date_today_string = datetime.date.today().strftime("%A %d %B %Y")
         clear_screen()
         print(f"Checking off habit \033[1m{tracked_habit.name}\033[0m\n")
-        
         
         print(f"\n\033[1m1. Check off habit - NOW ({date_today_string})\033[0m")
         print("\n\n2. Forgot to check off habit before and maybe lost a streak? Check off for date in the past.")
@@ -68,30 +84,44 @@ def check_off_menu():
             print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
             back_or_quit_or_track()
 
+
 def add_habit_menu():
+    """
+    This is the menu where the user can define a new habit - it then gets added to the database in the habit_list table.
+    When the habit is defined the streak is set as None. It will get set to 1 when the user checks it off for the first time.
+    This is handled in the check off menu above.
+    """
+
     clear_screen()
-    print("ADD NEW HABIT")
+    print("\033[1mADD NEW HABIT\033[0m")
 
     habit_name = input("Create habit name: ").strip()
     description = input("Set a description for your habit: ")
+
+    print("\nThe frequency is per how many days you would like to engage in the habit.")
+    print("For example, if you want to exercise every 2 days you will set the frequency to 2.\n")
     frequency = input("Set frequency: ")
 
+    #validating input for frequency
     while(not frequency.isdigit() or (frequency.isdigit() and int(frequency) < 1)):
         frequency = input("Frequency must be a positive integer: ")
 
+    #intitialize the habit object
     habit = habitclass.Habit(habit_name, description, frequency)
 
     try:
         db.add_habit(habit)
     except sqlite3.IntegrityError:
         clear_screen()
+
+        #Can't have 2 habits with the exact same name - having something like Exercise and exercise is fine though.
         print("You're trying to add a habit with an exact same name as one of your habits. Add a habit with a different name from the main menu.")
         back_or_quit_or_track()
 
 
     clear_screen()
-    print("Habit added!")
-    print(" 1. Check off habit. \n 2. Main menu")
+    print(f"Habit \033[1m{habit.name}\033[0m added!")
+    print("\n 1. Check off habit. \n 2. Main menu")
 
     option = get_num_option([1,2])
 
@@ -103,6 +133,11 @@ def add_habit_menu():
 
 
 def tracking_menu():
+
+    """
+    In this menu the user can choose between 1. seeing all of their habits to be able to inspect and edit them
+    or 2. inspecting the tracking statistics
+    """
 
     clear_screen()
     print("\033[1mTRACKING YOUR HABITS\033[0m")
@@ -176,6 +211,11 @@ def tracking_menu():
 
 
 def tracking_choice_menu():
+    """
+    In this menu the user can choose the individual habit to inspect or the statistic regarding all the habits 
+    (global statistics)
+    """
+
     clear_screen()
     print("Which of your habits would you like to track?")
 
@@ -246,11 +286,13 @@ def tracking_choice_menu():
 
         back_or_quit_or_track()
 
-"""
-Functionalities related to tracking individual habits (streak info etc).
-"""
 
 def indiv_habit_tracking_menu(habit):
+    """
+    Stats for individual habits - all the entries to the database + best streak.
+    Parameter - habit: a habitclass.Habit object.
+    """
+
     clear_screen()
     print(f"Habit: {habit.name}. Current streak: {habit.current_streak}\n")
 
@@ -269,6 +311,11 @@ def indiv_habit_tracking_menu(habit):
 
 def get_num_option(option_list):
 
+    """
+    Function for getting a numeric option from a menu.
+    Parameter: option_list - a list of integers corresponding to the options in the user interface.
+    """
+
     user_choice = input("\nChoose option: ").strip()
 
     while(not user_choice.isdigit() or (user_choice.isdigit() and (int(user_choice) not in option_list))):
@@ -277,6 +324,12 @@ def get_num_option(option_list):
     return int(user_choice)
 
 def get_date_frominput():
+
+    """
+    Function for getting a date from user input - used for backlogging. 
+    Returns a datetime.date object corresponding to the date the user picked.
+    """
+
     year = input("Enter year (type 'm' if you didn't intend this): ")
 
     #giving the user the option to back out in case of missclick
@@ -295,13 +348,25 @@ def get_date_frominput():
         while(not month.isdigit() or (month.isdigit() and int(month) not in list(range(1, 31)))):
             month = input("Enter a valid day - depends on month!): ")
         
-            
-        #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
-        #to just the dates. The time is set arbitrarly as the datetime.date objects do not have a timestamp() method 
-        date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
+        try:
+            #The 15:30:00 time is completely arbitrary, as the main functionalities of the program are related
+            #to just the dates. The time is set arbitrarly as the datetime.date objects do not have a timestamp() method 
+            date = datetime.datetime(int(year), int(month), int(day), 15, 30, 0)
+        except ValueError:
+            print("\nYou most likely put in a day that is out of range for your given month (for example, Feb 31 doesn't exist on a calendar)")
+            back_or_quit_or_track()
+            return None
+
         return int(date.timestamp())
 
 def editing_menu(habit):
+    """
+    In this menu the user can edit all or just the chosen parts defining a habit - any or none of the habit name, description or frequency.
+    See .database to see the sqlite code for this.
+
+    Parameter: habit - a habitclass.Habit object
+    """
+
     clear_screen()
     print(f"\033[1mEDITING HABIT - {habit.name}\033[0m\n")
     
@@ -328,6 +393,8 @@ def editing_menu(habit):
 
 def not_tracking_habits():
 
+    """Menu the user gets put into in case they want to use any habit tracking functionality but they haven't defined any habits yet."""
+
     clear_screen()
     print("You are not currently tracking any habits. ")
     print(" 1. Add habit. \n 2. Main menu")
@@ -339,6 +406,11 @@ def not_tracking_habits():
         main_menu()
 
 def back_or_quit_or_track():
+
+    """
+    Prompt when there are no more menus to go to from a part of the program. The user can choose to go back to the main menu, tracking menu,
+    or quit the program.
+    """
 
     user_choice = input("\nType 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
 
@@ -356,7 +428,7 @@ def back_or_quit_or_track():
 def print_habit_data(db, habit):
 
     """
-    A function that prints all the habit logs in the habit_data table
+    A function that prints all the habit logs in the habit_data table.
 
     Parameters:
                 db: a database.DatabaseConnection object
@@ -370,6 +442,9 @@ def print_habit_data(db, habit):
         print(f"Date: {datetime.date.fromtimestamp(entry[1])}, streak: {entry[2]}")
 
 def clear_screen():
+
+    """Function for clearing the screen in the terminal window - works for any platform"""
+    
     os = sys.platform
     
     if os == 'win32':

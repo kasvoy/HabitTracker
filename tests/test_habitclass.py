@@ -64,12 +64,13 @@ class TestHabitClass(unittest.TestCase):
         self.assertEqual(test_habit_daily.current_streak, 1)
         self.assertEqual(test_habit_weekly.current_streak, 1)
     
-    """
-    Habit exercise from the test data - done every 2 days.
-    In the test data database, the last exercise entry is logged on Apr 30 2023. The streak then is 2.
-    """
-    def test_check_off_exercise(self):
 
+    def test_check_off_exercise(self):
+        """
+        Habit exercise from the test data - done every 2 days.
+        In the test data database, the last exercise entry is logged on Apr 30 2023. The streak then is 2.
+        """
+        
         exercise = self.habit_list[0]
         self.assertEqual(exercise.name, "Exercise")
         self.assertEqual(exercise.frequency, 2)
@@ -95,11 +96,12 @@ class TestHabitClass(unittest.TestCase):
         exercise.check_off(self.testdata_db, datetime(2023, 5, 7).timestamp())
         self.assertEqual(exercise.current_streak, 1)
     
-    """
-    Habit clean room from the test data - done weekly (every 7 days).
-    In the test data database, the last clean room entry is logged on Apr 30 2023. The streak then is 1.
-    """
+
     def test_check_off_clean(self):
+        """
+        Habit clean room from the test data - done weekly (every 7 days).
+        In the test data database, the last clean room entry is logged on Apr 30 2023. The streak then is 1.
+        """
         clean = self.habit_list[1]
         self.assertEqual(clean.name, "Clean room")
         self.assertEqual(clean.frequency, 7)
@@ -124,16 +126,16 @@ class TestHabitClass(unittest.TestCase):
 
         clean.check_off(self.testdata_db, datetime(2023, 5, 23).timestamp())
         self.assertEqual(clean.current_streak, 1)
-    """
-    Testing backlogging - a situation where the user inputs a date that is previous to the last entry date.
-    They might have forgotten to check off a habit which led to them losing their streak.
-    In this test, an example habit done every 3 days (frequency = 3) is added to the empty testing database.
-    We then check it off today (datetime.now()) and then at the dates according to increasing the streak to 4
-    and then breaking it by checking it off to late. 
 
-    """
 
     def test_backlogging(self):
+        """
+        Testing backlogging - a situation where the user inputs a date that is previous to the last entry date.
+        They might have forgotten to check off a habit which led to them losing their streak.
+        In this test, an example habit done every 3 days (frequency = 3) is added to the empty testing database.
+        We then check it off today (datetime.now()) and then at the dates according to increasing the streak to 4
+        and then breaking it by checking it off to late. 
+        """
         today = datetime.now()
 
         example_habit = Habit("Example", "Example descriptbion", 3)
