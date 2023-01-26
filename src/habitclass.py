@@ -84,6 +84,8 @@ class Habit:
         else:
             previous_entry_date = datetime.date.fromtimestamp(habit_data[-1][1])
             current_entry_date = datetime.date.fromtimestamp(seconds_time)
+
+            #the streak of the last entry in the habit_data table of the database
             previous_streak = habit_data[-1][2]
             
             """

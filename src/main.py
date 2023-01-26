@@ -17,9 +17,8 @@ def main_menu():
     thanks to the back_or_quit_or_track() menu at the bottom of this file.
     """
 
-
     clear_screen()
-    print("\033[95m\033[1mHABIT PYTRACKER EARLY RELEASE 1.1.\033[0m\n")
+    print("\033[95m\033[1mHABIT PYTRACKER V1.0.\033[0m\n")
     print(" 1. Check off habit. \n 2. Add new habit. \n 3. Track and edit current habits \n 4. Quit program")
 
     option = get_num_option([1,2,3,4])
@@ -162,6 +161,11 @@ def tracking_menu():
                     print("Frequency: Done every day")
                 else:
                     print(f"Frequency: Done every {habit.frequency} days")
+                
+                if not habit.current_streak:
+                    print("Current streak: No check offs yet.")
+                else:
+                    print(f"Current streak: {habit.current_streak}")
 
             print("\n 1. Edit/delete a habit \n 2. Track habit. \n 3. Main menu")
             option2 = get_num_option([1, 2, 3, 4])
@@ -237,14 +241,23 @@ def tracking_choice_menu():
     
     elif option == length + 1:
         
-        name_streak = analysis.get_longest_streak_all(db)
-        
-        name = name_streak[0]
-        best_streak = name_streak[1]
-        
-        print(f"Your longest streak of all habits is {best_streak} for habit {name}.")
-        back_or_quit_or_track()
+        best_habits = analysis.get_longest_streak_all(db)
 
+        if not best_habits:
+            print("\nYou have not checked off any habits yet. Start checking off your habits to see this statistic.")
+            back_or_quit_or_track()
+
+        else:
+            if len(best_habits) == 1:
+                print(f"\nYour best streak so far of all habits is \033[1m{best_habits[0][1]}\033[0m for habit \033[1m{best_habits[0][0]}\033[0m.")
+                back_or_quit_or_track()
+            else:
+                print("\nTwo or more habits are tied for best run streak! They are:\n")
+                for habit_and_streak in best_habits:
+                    print(" "+habit_and_streak[0])
+                print(f"\nwith your best streak so far of \033[1m{best_habits[0][1]}\033[0m.")
+                back_or_quit_or_track()
+                
     elif option == length + 2:
         clear_screen()
         sorted_freq_set = sorted(analysis.get_frequencies(db))
@@ -256,7 +269,7 @@ def tracking_choice_menu():
         chosen_freq = sorted_freq_set[freq_option - 1]
         habits_with_chosen_freq = analysis.get_habits_with_freq(db, chosen_freq)
 
-        print(f"Habits done every {chosen_freq} days are:")
+        print(f"\nHabit(s) done every {chosen_freq} days is/are:")
 
         for i in range(len(habits_with_chosen_freq)):
             print(f"{i+1}. {habits_with_chosen_freq[i]}")
@@ -304,7 +317,10 @@ def indiv_habit_tracking_menu(habit):
         print_habit_data(db, habit)
 
     if option == 2:
-        print(f"Your best streak for {habit.name} is {analysis.get_longest_streak_habit(db, habit)}")
+        if analysis.get_longest_streak_habit(db, habit) is not None:
+            print(f"\nYour best streak for \033[1m{habit.name}\033[0m is \033[1m{analysis.get_longest_streak_habit(db, habit)}\033[0m.")
+        else:
+            print(f"No entries for {habit.name} yet! You can check off the habit from the main menu")
 
     back_or_quit_or_track()
 
@@ -444,7 +460,7 @@ def print_habit_data(db, habit):
 def clear_screen():
 
     """Function for clearing the screen in the terminal window - works for any platform"""
-    
+
     os = sys.platform
     
     if os == 'win32':

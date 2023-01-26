@@ -19,6 +19,7 @@ def find_block_number(db, habit, entry_date):
     block_number = 0
     habit_data = get_habit_data(db, habit)
     
+    #create list with just the streaks
     streaks = []
     for entry in habit_data:
         streaks.append(entry[2])
@@ -61,13 +62,15 @@ def get_longest_streak_habit(db, habit):
 def get_longest_streak_all(db):
 
     """
-    A function that returns the longest run streak for all habits in the database.
+    A function that returns the name of the habit with the longest run streak and the streak itself. If there are habits tied for the best run
+    streak, return all of them.
 
     Parameters:
                 db: a database.DatabaseConnection object
                 habit: a habitclass.Habit object
     Returns:
-                The longest run streak for all habits in the database: Integer. Returned as the first entry in a db.cursor.fetchall tuple.
+                result: a list of tuples fetched from the database. First entry of tuple is name of best habit in terms of streak and 
+                second is the streak itself.
 
     """
 
@@ -76,7 +79,11 @@ def get_longest_streak_all(db):
                     FROM habit_data WHERE current_streak = (SELECT MAX(current_streak) FROM habit_data)
                     """)
 
-    return db.cursor.fetchall()[0]
+    result = db.cursor.fetchall()
+    if len(result) > 0:
+        return result
+    else:
+        return None
 
 
 def get_frequencies(db):
@@ -132,13 +139,14 @@ def streakloss_in_period(db, habit, period_no_days):
 
     Returns:
                 no_streaklosses: int. number of streak losses of a particular habit in a given period.
+                None, if there are no entries in the database for the habit.
     """
 
     db.cursor.execute("SELECT current_streak, date FROM habit_data WHERE habit_name = ?", (habit.name,))
     results = db.cursor.fetchall()
     
     if len(results) == 0:
-        return "Didn't engage in habit in the set period"
+        return None
 
     delta = timedelta(days = period_no_days)
 
@@ -174,6 +182,8 @@ def streakloss_in_period(db, habit, period_no_days):
  
     no_streaklosses = 0
 
+    
+    
     if dates[cutoff_index] > last_date_seconds and streaks[cutoff_index] == 1:
         if streaks[cutoff_index - 1] > 1:
             if (datetime.fromtimestamp(dates[cutoff_index - 1]) + timedelta(days=habit.frequency)) >= last_date:
@@ -206,7 +216,8 @@ def find_most_streakloss_in_period(db, period_no_days):
         
     for habit in habit_list:
         if streakloss_in_period(db, habit, period_no_days) != 0:
-           habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_no_days)})
+            if streakloss_in_period(db, habit, period_no_days) is not None:
+                habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_no_days)})
     
     most_streakloss_habit_names = [
     habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
@@ -217,7 +228,6 @@ def find_most_streakloss_in_period(db, period_no_days):
     
     if len(most_habit_streakloss) == 0:
         return None
-    
     
     return most_habit_streakloss 
 
