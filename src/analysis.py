@@ -96,10 +96,12 @@ def get_frequencies(db):
                 db: a database.DatabaseConnection object
 
     Returns:
-                frequency_list: a list of integers with the frequencies of all the habits in the database.
+                frequency_list: a set of integers with the frequencies of all the habits in the database.
     """
 
     db.cursor.execute("SELECT frequency FROM habit_list")
+
+    #intialize set of frequencies - we only need to know the individual freqs so no repeats allowed.
     frequency_list = set()
 
     for entry in db.cursor.fetchall():
@@ -167,7 +169,7 @@ def streakloss_in_period(db, habit, period_no_days):
     #last_date but in a unix timestamp (as stored in the database)
     last_date_seconds = int(last_date.timestamp())
 
-    #create list with just the dates from the entries
+    #create 2 lists - just dates and just streaks
     dates = []
     streaks = []
     for entry in results:
@@ -175,6 +177,7 @@ def streakloss_in_period(db, habit, period_no_days):
     for entry in results:
         streaks.append(entry[0])
     
+    #find the last entry that is within the set period
     for index, date in enumerate(dates):
         if date == last_date_seconds or date > last_date_seconds:
             cutoff_index = index
@@ -182,15 +185,24 @@ def streakloss_in_period(db, habit, period_no_days):
  
     no_streaklosses = 0
 
+    """
+    The following if statement is when we increment the number of streak losses once in case the streak had been lost on a day that is within the period,
+    but there is no entry on that date. We understand the day of streak loss as the last day the user would have gotten a streak increase if he had
+    checked off the habit on that day. 
     
-    
+    """
+    #This will only happen if the last found entry date is after the last day within the period and the streak on that last entry date is 1. 
     if dates[cutoff_index] > last_date_seconds and streaks[cutoff_index] == 1:
+        #Also, the streak on the previous entry had to be more than 1 - this shows that the streak had been broken somewhere in between.
         if streaks[cutoff_index - 1] > 1:
+            #And the previous date from the cutoff is within the period set by the user.
             if (datetime.fromtimestamp(dates[cutoff_index - 1]) + timedelta(days=habit.frequency)) >= last_date:
                 no_streaklosses += 1
     
+
     entries_in_period = results[cutoff_index:]
 
+    #Counting the streak losses - if the difference in streaks is less than zero, this means there has been a streak lost.
     for i in range(len(entries_in_period) - 1):
         if (entries_in_period[i + 1][0] - entries_in_period[i][0]) < 0:
             no_streaklosses += 1
@@ -211,7 +223,11 @@ def find_most_streakloss_in_period(db, period_no_days):
     
     """
     habit_list = get_current_habits(db)
+
+    #dictionary of all habits and their streak losses within the set period
     habit_streakloss = dict()
+
+    #dictionary of the habits with the most streak losses within the set period
     most_habit_streakloss = dict()
         
     for habit in habit_list:
@@ -219,10 +235,12 @@ def find_most_streakloss_in_period(db, period_no_days):
             if streakloss_in_period(db, habit, period_no_days) is not None:
                 habit_streakloss.update({habit.name: streakloss_in_period(db, habit, period_no_days)})
     
+    #list of the names of the habits with the most streaklosses
     most_streakloss_habit_names = [
     habit_names for habit_names, values in habit_streakloss.items() if values == max(habit_streakloss.values())
         ]
     
+    #filling the dictionary with the names from the list above and updating their streak losses
     for habit_name in most_streakloss_habit_names:
         most_habit_streakloss.update({habit_name: habit_streakloss[habit_name]})
     

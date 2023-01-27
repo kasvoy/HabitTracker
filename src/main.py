@@ -72,7 +72,7 @@ def check_off_menu():
         if option == 1:                
             tracked_habit.check_off(db)
 
-            print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
+            print(f"\n\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
             back_or_quit_or_track()
             
         elif option == 2:
@@ -80,7 +80,7 @@ def check_off_menu():
             date_seconds = get_date_frominput()
             
             tracked_habit.check_off(db, date_seconds)
-            print(f"{tracked_habit.name} checked off! Current streak for {tracked_habit.name}: {tracked_habit.current_streak}")
+            print(f"\n\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
             back_or_quit_or_track()
 
 
@@ -107,7 +107,7 @@ def add_habit_menu():
 
     #intitialize the habit object
     habit = habitclass.Habit(habit_name, description, frequency)
-
+    
     try:
         db.add_habit(habit)
     except sqlite3.IntegrityError:
@@ -307,7 +307,15 @@ def indiv_habit_tracking_menu(habit):
     """
 
     clear_screen()
-    print(f"Habit: {habit.name}. Current streak: {habit.current_streak}\n")
+
+    if habit.frequency == 1:
+        when = "daily"
+    elif habit.frequency == 7:
+        when = "weekly"
+    else:
+        when ="every " + str(habit.frequency)+" days"
+
+    print(f"Habit: \033[1m{habit.name}\033[0m. Done {when}. Current streak: \033[1m{habit.current_streak}\033[0m.\n")
 
     print(f" 1. Show all entries for {habit.name}. \n 2. What was my longest streak for {habit.name}")
 
