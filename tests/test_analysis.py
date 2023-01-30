@@ -56,7 +56,7 @@ class TestAnalysisModule(unittest.TestCase):
         self.assertEqual(analysis.get_habits_with_freq(self.test_db, 2), habits_every_two_names)
     
     def test_get_longest_streak_all(self):
-        self.assertEqual(analysis.get_longest_streak_all(self.test_db), ("Meditation", 17))
+        self.assertEqual(analysis.get_longest_streak_all(self.test_db), [("Meditation", 17)])
     
     def test_get_longest_streak_habit(self):
         self.assertEqual(analysis.get_longest_streak_habit(self.test_db, self.habit_list[0]), 9)

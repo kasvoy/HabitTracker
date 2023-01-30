@@ -117,10 +117,10 @@ class Habit:
                 last_index = len(habit_data) - 1
                 num_to_remove = last_index - cutoff_index
                 db.delete_last_no_entries_for_habit(self, num_to_remove)
-                
+        
                 self.check_off(db, seconds_time)
                                 
-                for entry in rearranged:
+                for entry in rearranged:       
                     self.check_off(db, entry[1])
                
             #Setting the actual streak    

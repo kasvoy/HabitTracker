@@ -72,7 +72,8 @@ def check_off_menu():
         if option == 1:                
             tracked_habit.check_off(db)
 
-            print(f"\n\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
+            clear_screen()
+            print(f"\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
             back_or_quit_or_track()
             
         elif option == 2:
@@ -80,7 +81,8 @@ def check_off_menu():
             date_seconds = get_date_frominput()
             
             tracked_habit.check_off(db, date_seconds)
-            print(f"\n\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
+            clear_screen()
+            print(f"\033[1m{tracked_habit.name}\033[0m checked off! Current streak for {tracked_habit.name}: \033[1m{tracked_habit.current_streak}\033[0m")
             back_or_quit_or_track()
 
 
@@ -175,9 +177,11 @@ def tracking_menu():
                 clear_screen()
                 print("Which habit would you like to edit or delete?\n")
 
-                print("0. Go back to main menu")
+                
                 for i in range(len(habit_list)):
                     print(f"{i+1}. {habit_list[i].name}")
+                
+                print("\n0. Go back to main menu")
 
                 del_option = get_num_option(range(len(habit_list) + 1))
 

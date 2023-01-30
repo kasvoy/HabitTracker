@@ -62,10 +62,11 @@ class DatabaseConnection:
     def delete_last_no_entries_for_habit(self, habit, num_to_remove):
         
         self.cursor.execute("""
-                            DELETE FROM habit_data 
-                            WHERE date IN (SELECT date FROM habit_data ORDER BY date DESC LIMIT :limit)
-                            AND habit_name = :name
-                            """, {"limit": num_to_remove, "name": habit.name})
+                    DELETE FROM habit_data 
+                    WHERE habit_name = :name1
+                    AND date IN (SELECT date FROM habit_data WHERE habit_name = :name2 ORDER BY date DESC LIMIT :limit)
+                    """,  {"limit": num_to_remove, "name1": habit.name, "name2": habit.name})
+                    
         self.conn.commit()
 
 
