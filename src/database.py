@@ -63,10 +63,10 @@ class DatabaseConnection:
         
         self.cursor.execute("""
                     DELETE FROM habit_data 
-                    WHERE habit_name = :name1
-                    AND date IN (SELECT date FROM habit_data WHERE habit_name = :name2 ORDER BY date DESC LIMIT :limit)
-                    """,  {"limit": num_to_remove, "name1": habit.name, "name2": habit.name})
-                    
+                    WHERE habit_name = :name
+                    AND date IN (SELECT date FROM habit_data WHERE habit_name = :name ORDER BY date DESC LIMIT :limit)
+                    """,  {"limit": num_to_remove, "name": habit.name})
+
         self.conn.commit()
 
 
