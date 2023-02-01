@@ -112,14 +112,17 @@ class Habit:
                         cutoff_index = index - 1
                         break
                 
+                #Entries that were removed and are to be reinserted
                 rearranged = copy.copy(habit_data[cutoff_index+1:])
                 
                 last_index = len(habit_data) - 1
                 num_to_remove = last_index - cutoff_index
                 db.delete_last_no_entries_for_habit(self, num_to_remove)
-        
+
+                #Checking off the backlogged entry
                 self.check_off(db, seconds_time)
-                                
+                
+                #Reinserting the removed entries
                 for entry in rearranged:       
                     self.check_off(db, entry[1])
                
@@ -159,7 +162,3 @@ class Habit:
         #otherwise set the streak to the streak of the last entry
         else:
             self.current_streak = habit_data[-1][2]
-        
-    def __str__(self):
-        return (f"{self.name}, {self.description}, {self.frequency}, current streak: {self.current_streak}")
-

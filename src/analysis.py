@@ -71,7 +71,6 @@ def get_longest_streak_all(db):
     Returns:
                 result: a list of tuples fetched from the database. First entry of tuple is name of best habit in terms of streak and 
                 second is the streak itself.
-
     """
 
     db.cursor.execute("""

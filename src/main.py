@@ -256,7 +256,8 @@ def tracking_choice_menu():
                 print(f"\nYour best streak so far of all habits is \033[1m{best_habits[0][1]}\033[0m for habit \033[1m{best_habits[0][0]}\033[0m.")
                 back_or_quit_or_track()
             else:
-                print("\nTwo or more habits are tied for best run streak! They are:\n")
+                clear_screen()
+                print(f"{len(best_habits)} habits are tied for best run streak! They are:\n")
                 for habit_and_streak in best_habits:
                     print(" "+habit_and_streak[0])
                 print(f"\nwith your best streak so far of \033[1m{best_habits[0][1]}\033[0m.")
@@ -341,7 +342,9 @@ def get_num_option(option_list):
 
     """
     Function for getting a numeric option from a menu.
+
     Parameter: option_list - a list of integers corresponding to the options in the user interface.
+    Returns: the number of the option the user chose: int.
     """
 
     user_choice = input("\nChoose option: ").strip()
@@ -443,7 +446,7 @@ def back_or_quit_or_track():
     user_choice = input("\nType 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
 
     while(user_choice != 'q' and user_choice != 'm' and user_choice != 't'):
-        user_choice = input("Not a valid option. Type 'm/M' for main menu or 't/T' for tracking menu or q/Q to quit program: ").lower()
+        user_choice = input("Not a valid option. Type 'm/M' for main menu or 't/T' for tracking menu or 'q/Q' to quit program: ").lower()
 
     if user_choice == 'q':
         print("Program quit.")
